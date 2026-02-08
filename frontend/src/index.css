@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Tambahan agar peta full screen & tidak ada scrollbar aneh */
+html, body, #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Mencegah scrollbar ganda */
+}
+
+/* Pastikan container peta Leaflet mengisi ruang yang tersedia */
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+    z-index: 0;
+}
