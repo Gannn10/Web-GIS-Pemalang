@@ -2,11 +2,11 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'pemalang_gis', // Sesuaikan dengan nama databasemu
+    password: process.env.DB_PASSWORD || 'pemalang', // Sesuaikan dengan password databasemu
+    port: process.env.DB_PORT || 5432,
 });
 
 // Event listener (opsional, untuk debug saat ada klien baru terkoneksi)
@@ -21,13 +21,11 @@ pool.on('error', (err) => {
 });
 
 // 🔥 TEST KONEKSI LANGSUNG SAAT SERVER NYALA 🔥
-// Ini penting supaya Anda langsung tahu kalau settingan .env sudah benar
 pool.query('SELECT NOW()', (err, res) => {
     if (err) {
         console.error('❌ Gagal terhubung ke Database:', err.message);
     } else {
         console.log('✅ Berhasil terhubung ke PostgreSQL!');
-        console.log(`🕒 Waktu Server Database: ${res.rows[0].now}`);
     }
 });
 

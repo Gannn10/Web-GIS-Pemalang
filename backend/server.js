@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
+//const helmet = require('helmet');
+const path = require('path'); // TAMBAHAN 1: Import path untuk mengatur alamat folder
 require('dotenv').config();
 
 require('./config/database');
@@ -9,13 +10,16 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(helmet());
-app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
-    credentials: true
-}));
+// 1. Buka semua jalur CORS (Cara Paling Ampuh buat lokal)
+app.use(cors());
+
+// 2. Parser Data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// TAMBAHAN 2: Buka akses agar folder 'uploads' bisa dibaca oleh internet/React
+// Nanti URL gambarnya jadi: http://localhost:5000/uploads/nama-fotonya.jpg
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.get('/', (req, res) => {
@@ -26,7 +30,7 @@ app.get('/', (req, res) => {
     });
 });
 
-// Import routes (akan kita buat nanti)
+// Import routes
 const wisataRoutes = require('./routes/wisataRoutes');
 const haversineRoutes = require('./routes/haversineRoutes');
 const authRoutes = require('./routes/authRoutes');
