@@ -114,7 +114,7 @@ const Home = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                         
                         {/* Wisata 1 */}
-                        <div className="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 group cursor-pointer">
+                        <Link to="/wisata/1" className="bg-white rounded-3xl overflow-hidden  shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 group cursor-pointer">
                             <div className="relative h-64 overflow-hidden">
                                 <img 
                                     src="/widuri 1.jpg" 
@@ -133,31 +133,35 @@ const Home = () => {
                                     Pemalang, Jawa Tengah
                                 </div>
                             </div>
-                        </div>
+                        </Link>
 
                         {/* Wisata 2 */}
-                        <div className="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 group cursor-pointer mt-0 md:mt-8">
+
+
+                        <Link to="/wisata/23" className="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 group cursor-pointer mt-0 md:mt-8">
                             <div className="relative h-64 overflow-hidden">
                                 <img 
-                                    src="/curug cibedil3.jpg"
+                                    src="/curug cibedil3.jpg" 
+                                    alt="Bukit Tangkeban" 
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
                                 <div className="absolute top-4 right-4 bg-green-600/90 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
                                     Wisata Alam
+                                    
                                 </div>
                             </div>
                             <div className="p-8">
-                                <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">Curug Sibedil</h3>
+                                <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">Bukit Tangkeban</h3>
                                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">Air terjun eksotis dengan tebing berbatu unik yang menyajikan kesegaran alami khas pegunungan Pemalang selatan.</p>
                                 <div className="flex items-center text-sm font-medium text-gray-400">
                                     <svg className="w-4 h-4 mr-1 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path></svg>
                                     Moga, Pemalang
                                 </div>
                             </div>
-                        </div>
+                        </Link>
 
                         {/* Wisata 3 */}
-                        <div className="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 group cursor-pointer mt-0 md:mt-16">
+                        <Link to="/wisata/23" className="bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 group cursor-pointer mt-0 md:mt-16">
                             <div className="relative h-64 overflow-hidden">
                                 <img 
                                     src="/bukit tanggeban5.jpg" 
@@ -176,7 +180,7 @@ const Home = () => {
                                     Pulosari, Pemalang
                                 </div>
                             </div>
-                        </div>
+                        </Link>
 
                     </div>
                     

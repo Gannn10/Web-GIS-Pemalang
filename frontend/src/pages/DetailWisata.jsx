@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate , Link} from 'react-router-dom';
 import axios from 'axios';
 
 const DetailWisata = () => {
@@ -195,13 +195,12 @@ const DetailWisata = () => {
                             <div className="text-xs text-gray-500 text-center mb-2 font-mono bg-gray-50 py-1.5 rounded-lg border border-gray-100">
                                 Lat: {wisata.latitude} | Lon: {wisata.longitude}
                             </div>
-                            <a 
-                                href={`http://googleusercontent.com/maps.google.com/?q=${wisata.latitude},${wisata.longitude}`}
-                                target="_blank" rel="noreferrer"
-                                className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-3 rounded-xl font-bold text-base hover:bg-gray-800 transition shadow-lg hover:-translate-y-0.5 active:scale-95"
-                            >
-                                <span>🗺️</span> Buka Rute di Google Maps
-                            </a>
+                            <Link 
+                                 to={`/explore?wisata=${wisata.wisata_id}`}
+                                          className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-3 rounded-xl font-bold text-base hover:bg-gray-800 transition shadow-lg hover:-translate-y-0.5 active:scale-95"
+                                >
+                                <span>🗺️</span> Lihat di Peta Interaktif
+                            </Link>
                         </div>
 
                     </div>
