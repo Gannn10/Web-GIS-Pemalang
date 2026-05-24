@@ -31,14 +31,15 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ 
     storage: storage, 
     fileFilter: fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 } // Batas maksimal ukuran foto = 5MB
+    limits: { fileSize: 25 * 1024 * 1024 } // Batas maksimal ukuran foto dinaikkan jadi 25MB
 });
 
 // Kita set multer untuk menangkap 3 field foto sekaligus
 const uploadFotos = upload.fields([
     { name: 'foto_utama', maxCount: 1 },
     { name: 'foto_2', maxCount: 1 },
-    { name: 'foto_3', maxCount: 1 }
+    { name: 'foto_3', maxCount: 1 },
+    { name: 'foto_populer', maxCount: 1 }
 ]);
 
 // ==============================

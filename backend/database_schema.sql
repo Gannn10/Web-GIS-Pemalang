@@ -150,7 +150,7 @@ INSERT INTO kategori (nama_kategori, deskripsi, icon_url) VALUES
 INSERT INTO fasilitas (nama_fasilitas, icon) VALUES
 ('Toilet', '🚻'),
 ('Parkir', '🅿️'),
-('Mushola', '🕌'),
+('Tempat Ibadah', 'http://localhost:5000/uploads/tempat_ibadah.png'),
 ('Warung Makan', '🍽️'),
 ('Spot Foto', '📸'),
 ('Gazebo', '🏕️'),

@@ -35,11 +35,13 @@ const wisataRoutes = require('./routes/wisataRoutes');
 const haversineRoutes = require('./routes/haversineRoutes');
 const authRoutes = require('./routes/authRoutes');
 const kategoriRoutes = require('./routes/kategoriRoutes');
+const fasilitasRoutes = require('./routes/fasilitasRoutes');
 
 app.use('/api/wisata', wisataRoutes);
 app.use('/api/haversine', haversineRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/kategori', kategoriRoutes);
+app.use('/api/fasilitas', fasilitasRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
