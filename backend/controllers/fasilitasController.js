@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const { formatImageUrl } = require('../utils/imageUrlFormatter');
 
 /**
  * ========================================
@@ -10,10 +11,17 @@ exports.getAllFasilitas = async (req, res) => {
         const query = 'SELECT * FROM fasilitas ORDER BY nama_fasilitas ASC';
         const { rows } = await pool.query(query);
         
+        const formattedRows = rows.map(row => {
+            if (row.icon) {
+                row.icon = formatImageUrl(row.icon, req);
+            }
+            return row;
+        });
+        
         res.json({
             success: true,
-            count: rows.length,
-            data: rows
+            count: formattedRows.length,
+            data: formattedRows
         });
     } catch (error) {
         console.error('Error in getAllFasilitas:', error);

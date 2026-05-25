@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const { formatWisataImages } = require('../utils/imageUrlFormatter');
 
 /**
  * Fungsi Pintar: Mengubah file yang diupload menjadi Link URL lokal
@@ -49,7 +50,8 @@ exports.getAllWisata = async (req, res) => {
         query += ` ORDER BY w.wisata_id ASC`;
 
         const result = await pool.query(query, params);
-        res.status(200).json({ success: true, count: result.rows.length, data: result.rows });
+        const formattedRows = result.rows.map(row => formatWisataImages(row, req));
+        res.status(200).json({ success: true, count: formattedRows.length, data: formattedRows });
     } catch (error) { 
         console.error("Error Get All:", error);
         res.status(500).json({ success: false, message: 'Server Error' }); 
@@ -75,7 +77,8 @@ exports.getWisataTerdekat = async (req, res) => {
         `;
 
         const result = await pool.query(query, [parseFloat(lon), parseFloat(lat), parseFloat(searchRadius)]);
-        res.status(200).json({ success: true, data: result.rows });
+        const formattedRows = result.rows.map(row => formatWisataImages(row, req));
+        res.status(200).json({ success: true, data: formattedRows });
     } catch (error) { res.status(500).json({ success: false, message: 'Server Error' }); }
 };
 
@@ -101,7 +104,8 @@ exports.getWisataById = async (req, res) => {
         `;
         const result = await pool.query(query, [id]);
         if (result.rows.length === 0) return res.status(404).json({ success: false, message: 'Wisata tidak ditemukan' });
-        res.status(200).json({ success: true, data: result.rows[0] });
+        const formattedWisata = formatWisataImages(result.rows[0], req);
+        res.status(200).json({ success: true, data: formattedWisata });
     } catch (error) { res.status(500).json({ success: false, message: 'Server Error' }); }
 };
 
@@ -170,7 +174,7 @@ exports.createWisata = async (req, res) => {
             }
         }
 
-        res.status(201).json({ success: true, message: 'Wisata berhasil ditambahkan', data: result.rows[0] });
+        res.status(201).json({ success: true, message: 'Wisata berhasil ditambahkan', data: formatWisataImages(result.rows[0], req) });
     } catch (error) { 
         console.error('Error createWisata:', error);
         res.status(500).json({ success: false, message: 'Gagal tambah wisata', error: error.message }); 
@@ -252,7 +256,7 @@ exports.updateWisata = async (req, res) => {
             }
         }
 
-        res.status(200).json({ success: true, message: 'Wisata berhasil diupdate', data: result.rows[0] });
+        res.status(200).json({ success: true, message: 'Wisata berhasil diupdate', data: formatWisataImages(result.rows[0], req) });
     } catch (error) { 
         console.error('Error updateWisata:', error);
         res.status(500).json({ success: false, message: 'Gagal update wisata', error: error.message }); 

@@ -1,13 +1,20 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'pemalang_gis', // Sesuaikan dengan nama databasemu
-    password: process.env.DB_PASSWORD || 'pemalang', // Sesuaikan dengan password databasemu
-    port: process.env.DB_PORT || 5432,
-});
+const pool = process.env.DATABASE_URL
+    ? new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+            rejectUnauthorized: false
+        }
+      })
+    : new Pool({
+        user: process.env.DB_USER || 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_NAME || 'pemalang_gis', // Sesuaikan dengan nama databasemu
+        password: process.env.DB_PASSWORD || 'pemalang', // Sesuaikan dengan password databasemu
+        port: process.env.DB_PORT || 5432,
+      });
 
 // Event listener (opsional, untuk debug saat ada klien baru terkoneksi)
 pool.on('connect', () => {
