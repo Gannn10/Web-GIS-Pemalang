@@ -85,19 +85,7 @@ CREATE TABLE wisata_fasilitas (
     PRIMARY KEY (wisata_id, fasilitas_id)
 );
 
--- ============================================
--- 6. TABEL ULASAN (Optional)
--- ============================================
-CREATE TABLE ulasan (
-    ulasan_id SERIAL PRIMARY KEY,
-    wisata_id INTEGER REFERENCES wisata(wisata_id) ON DELETE CASCADE,
-    nama_pengunjung VARCHAR(100),
-    email VARCHAR(100),
-    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-    komentar TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_approved BOOLEAN DEFAULT FALSE
-);
+
 
 -- ============================================
 -- INDEXES untuk Performa
@@ -112,7 +100,7 @@ CREATE INDEX idx_wisata_nama ON wisata USING GIN(to_tsvector('indonesian', nama_
 -- Foreign Key Indexes
 CREATE INDEX idx_wisata_kategori ON wisata(kategori_id);
 CREATE INDEX idx_wisata_status ON wisata(status);
-CREATE INDEX idx_ulasan_wisata ON ulasan(wisata_id);
+
 
 -- ============================================
 -- TRIGGER: Auto-update timestamp
