@@ -5,33 +5,29 @@ const path = require('path');
 const wisataController = require('../controllers/wisataController');
 const authMiddleware = require('../middleware/auth');
 
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
+
 // ==============================
-// SETUP MULTER (MESIN PENANGKAP FOTO)
+// SETUP CLOUDINARY
 // ==============================
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/'); // Arahkan ke folder uploads yang udah kamu bikin
-    },
-    filename: function (req, file, cb) {
-        // Bikin nama file unik pakai kombinasi tanggal dan angka acak
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Filter khusus biar cuma nerima gambar
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
-    } else {
-        cb(new Error('Hanya file gambar (JPG, PNG, dll) yang diperbolehkan!'), false);
-    }
-};
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'pemalang_tourism', // Nama folder di dalam Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+  },
+});
 
 const upload = multer({ 
-    storage: storage, 
-    fileFilter: fileFilter,
-    limits: { fileSize: 25 * 1024 * 1024 } // Batas maksimal ukuran foto dinaikkan jadi 25MB
+    storage: storage,
+    limits: { fileSize: 25 * 1024 * 1024 } // Batas 25MB
 });
 
 // Kita set multer untuk menangkap 3 field foto sekaligus

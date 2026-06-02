@@ -124,7 +124,7 @@ EXECUTE FUNCTION update_timestamp();
 
 -- 1. Insert Admin Default
 INSERT INTO users (username, password_hash, email, full_name, role) VALUES
-('admin', '$2a$10$8K1p/a0dL3LKzYjKzYjKz.eN7Z0Z0Z0Z0Z0Z0Z0Z0Z0Z0Z0', 'admin@pemalang.go.id', 'Administrator', 'admin');
+('admin', '$2b$10$.z0jmrp30XZYz/Z.cQXcA.jv22QoHZjcB48W57xd6Pm/HruPRG.3q', 'admin@pemalang.go.id', 'Administrator', 'admin');
 -- Password: admin123 (akan di-hash dengan bcrypt saat production)
 
 -- 2. Insert Kategori

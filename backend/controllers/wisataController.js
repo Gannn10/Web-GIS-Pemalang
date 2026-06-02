@@ -2,16 +2,14 @@ const pool = require('../config/database');
 const { formatWisataImages } = require('../utils/imageUrlFormatter');
 
 /**
- * Fungsi Pintar: Mengubah file yang diupload menjadi Link URL lokal
- * Contoh output: http://localhost:5000/uploads/foto_utama-123456.jpg
+ * Fungsi Pintar: Mengambil URL langsung dari Cloudinary
  */
 const getFileUrl = (req, fieldName) => {
-    // Kalau ada file yang di-upload
+    // Kalau ada file yang di-upload via Cloudinary
     if (req.files && req.files[fieldName]) {
-        return `${req.protocol}://${req.get('host')}/uploads/${req.files[fieldName][0].filename}`;
+        return req.files[fieldName][0].path;
     }
-    // Kalau nggak ada file yang di-upload, ambil dari request body biasa (teks string)
-    // Ini berguna banget buat fitur UPDATE kalau admin nggak mau ganti foto
+    // Kalau nggak ada file yang di-upload, ambil dari request body biasa
     return req.body[fieldName] || null;
 };
 
