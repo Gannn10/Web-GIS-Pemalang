@@ -13,6 +13,7 @@ const poolConfig = {
 
 if (isProduction) {
     poolConfig.ssl = {
+        require: true,
         rejectUnauthorized: false
     };
 }
@@ -21,6 +22,7 @@ const pool = process.env.DATABASE_URL
     ? new Pool({
         connectionString: process.env.DATABASE_URL,
         ssl: {
+            require: true,
             rejectUnauthorized: false
         }
       })
