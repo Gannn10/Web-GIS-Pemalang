@@ -17,10 +17,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// TAMBAHAN 2: Buka akses agar folder 'uploads' bisa dibaca oleh internet/React
-// Nanti URL gambarnya jadi: http://localhost:5000/uploads/nama-fotonya.jpg
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // Routes
 app.get('/', (req, res) => {
     res.json({
