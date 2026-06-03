@@ -911,7 +911,7 @@ const Home = () => {
                     <span style={{ fontWeight: 700, fontSize: 15, color: '#fff', letterSpacing: '-0.01em' }}>WebGIS <span style={{ color: '#ADC6FF' }}>Pemalang</span></span>
                 </div>
                 <p style={{ color: '#727785', fontSize: 13, fontWeight: 400 }}>
-                    © {new Date().getFullYear()} Sistem Informasi Geografis Pariwisata Kabupaten Pemalang
+                    © {new Date().getFullYear()} WebGIS Pariwisata Pemalang
                 </p>
                 <style>{`
                     @media (max-width: 768px) {
