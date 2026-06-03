@@ -1027,37 +1027,23 @@ const MapPage = () => {
                             
                             {/* Floating Action Bar */}
                             <motion.div 
-                                initial={{ y: 50, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                className="absolute bottom-12 md:bottom-24 left-1/2 transform -translate-x-1/2 z-[2000] w-[92%] sm:w-[400px]"
+                                initial={{ y: 50, opacity: 0, x: "-50%" }}
+                                animate={{ y: 0, opacity: 1, x: "-50%" }}
+                                className="absolute bottom-[90px] md:bottom-24 left-1/2 z-[2000] w-[90%] sm:w-[340px]"
                             >
-                                <div className="bg-gradient-to-br from-white/95 to-white/90 backdrop-blur-xl p-4 md:p-5 rounded-[28px] shadow-[0_24px_60px_-15px_rgba(0,77,164,0.2)] border border-white flex flex-col gap-4 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
-                                    
-                                    <div className="flex items-start justify-between relative z-10 px-1">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 shadow-sm border border-blue-100/50">
-                                                <Navigation size={18} fill="currentColor" className="rotate-45" />
-                                            </div>
-                                            <div className="flex-1 pr-2">
-                                                <p className="text-[14px] md:text-[15px] font-black text-gray-800 tracking-wide leading-tight">Tentukan Titik</p>
-                                                <p className="text-[10px] md:text-[11px] font-bold text-gray-500 mt-1 leading-snug">Geser peta & arahkan pin</p>
-                                            </div>
-                                        </div>
-                                        <button onClick={() => setIsSelectingLoc(false)} className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-rose-50 hover:text-rose-500 transition-all border border-gray-100 hover:border-rose-100">
-                                            <X size={14} strokeWidth={3} />
-                                        </button>
+                                <div className="bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-[0_12px_30px_rgba(0,0,0,0.15)] border border-gray-100 flex items-center justify-between gap-3">
+                                    <div className="flex flex-col pl-2">
+                                        <p className="text-[11px] font-black text-gray-800 uppercase tracking-wider">Tentukan Titik</p>
+                                        <p className="text-[9px] font-bold text-gray-400 mt-0.5 tracking-wider">Arahkan pin ke lokasi</p>
                                     </div>
                                     <button 
                                         onClick={() => {
                                             if (mapCenter) handleLocationSelected(mapCenter);
                                             else handleLocationSelected([-7.0125, 109.3772]); // centerPemalang fallback
                                         }}
-                                        className="w-full relative z-10 bg-gradient-to-r from-[#004DA4] to-blue-600 text-white font-black py-4 rounded-2xl shadow-[0_12px_24px_rgba(0,77,164,0.25)] hover:shadow-[0_16px_32px_rgba(0,77,164,0.35)] active:scale-[0.98] transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2.5 group overflow-hidden"
+                                        className="bg-[#004DA4] text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md hover:bg-[#003c80] active:scale-95 transition-all whitespace-nowrap"
                                     >
-                                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
-                                        <MapPin size={18} strokeWidth={2.5} className="relative z-10 group-hover:-translate-y-0.5 transition-transform" />
-                                        <span className="relative z-10">Konfirmasi Lokasi</span>
+                                        Konfirmasi
                                     </button>
                                 </div>
                             </motion.div>
@@ -1248,51 +1234,41 @@ const MapPage = () => {
 
             {/* ===================== BOTTOM SHEET (Mobile Only) ===================== */}
             <AnimatePresence>
-                {/* Mobile Legend Button */}
-                {!isMobileLegendOpen && !(selectedWisata || isSidebarOpen) && (
-                    <motion.button
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setIsMobileLegendOpen(true)}
-                        className="md:hidden absolute bottom-[80px] left-4 z-[4000] w-12 h-12 bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-gray-100 flex items-center justify-center text-blue-500"
-                    >
-                        <Layers size={22} strokeWidth={2.5} />
-                    </motion.button>
-                )}
-
                 {/* Mobile Legend Bottom Sheet */}
-                {isMobileLegendOpen && !(selectedWisata || isSidebarOpen) && (
+                {!(selectedWisata || isSidebarOpen) && (
                     <motion.div
-                        initial={{ y: "100%", opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: "100%", opacity: 0 }}
+                        initial={false}
+                        animate={{ y: isMobileLegendOpen ? 0 : 160 }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         drag="y"
                         dragConstraints={{ top: 0, bottom: 0 }}
-                        dragElastic={0.2}
+                        dragElastic={0.1}
                         onDragEnd={(e, info) => {
-                            if (info.offset.y > 50) {
+                            if (info.offset.y > 20) {
                                 setIsMobileLegendOpen(false);
+                            } else if (info.offset.y < -20) {
+                                setIsMobileLegendOpen(true);
                             }
                         }}
-                        className="md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] flex flex-col max-h-[60vh] border-t border-gray-100"
+                        className="md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] flex flex-col h-[230px] border-t border-gray-100"
                     >
                         {/* Drag Handle */}
-                        <div className="w-full flex justify-center py-4 shrink-0 cursor-grab active:cursor-grabbing touch-none" onClick={() => setIsMobileLegendOpen(false)}>
+                        <div className="w-full flex justify-center py-4 shrink-0 cursor-grab active:cursor-grabbing touch-none" onClick={() => setIsMobileLegendOpen(!isMobileLegendOpen)}>
                             <div className="w-12 h-[5px] bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"></div>
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 overflow-y-auto no-scrollbar pb-6 px-5 flex flex-col gap-6">
+                        <div className="flex-1 overflow-y-hidden px-5 flex flex-col">
                             {/* Legenda Peta */}
                             <div>
-                                <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center justify-between mb-4 cursor-pointer" onClick={() => setIsMobileLegendOpen(!isMobileLegendOpen)}>
                                     <h3 className="text-xs font-black text-gray-900 flex items-center gap-2">
                                         <Layers size={14} className="text-blue-500" strokeWidth={3} />
                                         Legenda Peta
                                     </h3>
-                                    <button onClick={() => setIsMobileLegendOpen(false)} className="text-[9px] font-bold text-blue-500 bg-blue-50 px-2.5 py-1 rounded-full uppercase tracking-wider">Tutup</button>
+                                    <button className="text-gray-400 p-1">
+                                        <ChevronRight size={16} className={`transition-transform duration-300 ${isMobileLegendOpen ? 'rotate-90' : '-rotate-90'}`} />
+                                    </button>
                                 </div>
                                 <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
                                     {[
