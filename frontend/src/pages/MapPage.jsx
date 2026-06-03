@@ -1238,7 +1238,7 @@ const MapPage = () => {
                 {!(selectedWisata || isSidebarOpen) && (
                     <motion.div
                         initial={false}
-                        animate={{ y: isMobileLegendOpen ? 0 : 160 }}
+                        animate={{ y: isMobileLegendOpen ? 0 : 85 }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         drag="y"
                         dragConstraints={{ top: 0, bottom: 0 }}
@@ -1250,7 +1250,7 @@ const MapPage = () => {
                                 setIsMobileLegendOpen(true);
                             }
                         }}
-                        className="md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] flex flex-col h-[230px] border-t border-gray-100"
+                        className="md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] flex flex-col h-[155px] border-t border-gray-100"
                     >
                         {/* Drag Handle */}
                         <div className="w-full flex justify-center py-4 shrink-0 cursor-grab active:cursor-grabbing touch-none" onClick={() => setIsMobileLegendOpen(!isMobileLegendOpen)}>
