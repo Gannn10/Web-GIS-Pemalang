@@ -414,6 +414,7 @@ const MapPage = () => {
     const [isMapLayersOpen, setIsMapLayersOpen] = useState(false);
     const [isListExpanded, setIsListExpanded] = useState(true);
     const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+    const [isMobileLegendOpen, setIsMobileLegendOpen] = useState(false);
 
     const centerPemalang = [-7.0125, 109.3772];
     const pemalangStyle = { 
@@ -1028,15 +1029,22 @@ const MapPage = () => {
                             <motion.div 
                                 initial={{ y: 50, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-[2000] w-[90%] md:w-[380px]"
+                                className="absolute bottom-12 md:bottom-24 left-1/2 transform -translate-x-1/2 z-[2000] w-[92%] sm:w-[400px]"
                             >
-                                <div className="bg-white/95 backdrop-blur-md p-4 md:p-5 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-gray-100 flex flex-col gap-3.5">
-                                    <div className="flex items-center justify-between px-1">
-                                        <div>
-                                            <p className="text-[13px] font-black text-gray-800 uppercase tracking-wider">Tentukan Titik Awal</p>
-                                            <p className="text-[10px] font-bold text-gray-400 mt-0.5 uppercase tracking-widest">Geser peta & arahkan pin ke lokasi</p>
+                                <div className="bg-gradient-to-br from-white/95 to-white/90 backdrop-blur-xl p-4 md:p-5 rounded-[28px] shadow-[0_24px_60px_-15px_rgba(0,77,164,0.2)] border border-white flex flex-col gap-4 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
+                                    
+                                    <div className="flex items-start justify-between relative z-10 px-1">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 shadow-sm border border-blue-100/50">
+                                                <Navigation size={18} fill="currentColor" className="rotate-45" />
+                                            </div>
+                                            <div className="flex-1 pr-2">
+                                                <p className="text-[14px] md:text-[15px] font-black text-gray-800 tracking-wide leading-tight">Tentukan Titik</p>
+                                                <p className="text-[10px] md:text-[11px] font-bold text-gray-500 mt-1 leading-snug">Geser peta & arahkan pin</p>
+                                            </div>
                                         </div>
-                                        <button onClick={() => setIsSelectingLoc(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+                                        <button onClick={() => setIsSelectingLoc(false)} className="w-8 h-8 shrink-0 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-rose-50 hover:text-rose-500 transition-all border border-gray-100 hover:border-rose-100">
                                             <X size={14} strokeWidth={3} />
                                         </button>
                                     </div>
@@ -1045,10 +1053,11 @@ const MapPage = () => {
                                             if (mapCenter) handleLocationSelected(mapCenter);
                                             else handleLocationSelected([-7.0125, 109.3772]); // centerPemalang fallback
                                         }}
-                                        className="w-full bg-[#004DA4] text-white font-black py-3.5 rounded-xl shadow-lg shadow-blue-900/20 hover:bg-[#003c80] active:scale-95 transition-all text-[11px] uppercase tracking-widest flex items-center justify-center gap-2"
+                                        className="w-full relative z-10 bg-gradient-to-r from-[#004DA4] to-blue-600 text-white font-black py-4 rounded-2xl shadow-[0_12px_24px_rgba(0,77,164,0.25)] hover:shadow-[0_16px_32px_rgba(0,77,164,0.35)] active:scale-[0.98] transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2.5 group overflow-hidden"
                                     >
-                                        <MapPin size={16} strokeWidth={2.5} />
-                                        Set Lokasi Disini
+                                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                                        <MapPin size={18} strokeWidth={2.5} className="relative z-10 group-hover:-translate-y-0.5 transition-transform" />
+                                        <span className="relative z-10">Konfirmasi Lokasi</span>
                                     </button>
                                 </div>
                             </motion.div>
@@ -1239,7 +1248,21 @@ const MapPage = () => {
 
             {/* ===================== BOTTOM SHEET (Mobile Only) ===================== */}
             <AnimatePresence>
-                {!(selectedWisata || isSidebarOpen) && (
+                {/* Mobile Legend Button */}
+                {!isMobileLegendOpen && !(selectedWisata || isSidebarOpen) && (
+                    <motion.button
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setIsMobileLegendOpen(true)}
+                        className="md:hidden absolute bottom-[80px] left-4 z-[4000] w-12 h-12 bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-gray-100 flex items-center justify-center text-blue-500"
+                    >
+                        <Layers size={22} strokeWidth={2.5} />
+                    </motion.button>
+                )}
+
+                {/* Mobile Legend Bottom Sheet */}
+                {isMobileLegendOpen && !(selectedWisata || isSidebarOpen) && (
                     <motion.div
                         initial={{ y: "100%", opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
@@ -1248,43 +1271,47 @@ const MapPage = () => {
                         drag="y"
                         dragConstraints={{ top: 0, bottom: 0 }}
                         dragElastic={0.2}
-                        className="md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] flex flex-col max-h-[60vh]"
+                        onDragEnd={(e, info) => {
+                            if (info.offset.y > 50) {
+                                setIsMobileLegendOpen(false);
+                            }
+                        }}
+                        className="md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] flex flex-col max-h-[60vh] border-t border-gray-100"
                     >
                         {/* Drag Handle */}
-                        <div className="w-full flex justify-center py-3 shrink-0 cursor-grab active:cursor-grabbing touch-none">
-                            <div className="w-12 h-[5px] bg-gray-200 rounded-full"></div>
+                        <div className="w-full flex justify-center py-4 shrink-0 cursor-grab active:cursor-grabbing touch-none" onClick={() => setIsMobileLegendOpen(false)}>
+                            <div className="w-12 h-[5px] bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"></div>
                         </div>
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto no-scrollbar pb-6 px-5 flex flex-col gap-6">
-                    {/* Legenda Peta */}
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-xs font-black text-gray-900 flex items-center gap-2">
-                                <Layers size={14} className="text-blue-500" strokeWidth={3} />
-                                Legenda Peta
-                            </h3>
-                        </div>
-                        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-                            {[
-                                { label: 'Bahari', icon: <Waves size={16} />, color: 'bg-blue-50 text-blue-500' },
-                                { label: 'Alam', icon: <TreesIcon size={16} />, color: 'bg-emerald-50 text-emerald-500' },
-                                { label: 'Religi', icon: <MosqueIcon size={16} />, color: 'bg-orange-50 text-orange-500' },
-                                { label: 'Buatan', icon: <MonumentIcon size={16} />, color: 'bg-purple-50 text-purple-500' },
-
-                                { label: 'Batas', icon: <div className="w-4 h-[2px] bg-gray-400"></div>, color: 'bg-gray-50 text-gray-600' }
-                            ].map((leg) => (
-                                <div key={leg.label} className="flex flex-col items-center gap-2 shrink-0 w-[48px]">
-                                    <div className={`w-12 h-12 rounded-full ${leg.color} flex items-center justify-center border border-white shadow-[0_4px_10px_rgba(0,0,0,0.03)]`}>
-                                        {leg.icon}
-                                    </div>
-                                    <span className="text-[9px] font-black text-gray-800 text-center tracking-wide">{leg.label}</span>
+                            {/* Legenda Peta */}
+                            <div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-xs font-black text-gray-900 flex items-center gap-2">
+                                        <Layers size={14} className="text-blue-500" strokeWidth={3} />
+                                        Legenda Peta
+                                    </h3>
+                                    <button onClick={() => setIsMobileLegendOpen(false)} className="text-[9px] font-bold text-blue-500 bg-blue-50 px-2.5 py-1 rounded-full uppercase tracking-wider">Tutup</button>
                                 </div>
-                            ))}
+                                <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                                    {[
+                                        { label: 'Bahari', icon: <Waves size={16} />, color: 'bg-blue-50 text-blue-500' },
+                                        { label: 'Alam', icon: <TreesIcon size={16} />, color: 'bg-emerald-50 text-emerald-500' },
+                                        { label: 'Religi', icon: <MosqueIcon size={16} />, color: 'bg-orange-50 text-orange-500' },
+                                        { label: 'Buatan', icon: <MonumentIcon size={16} />, color: 'bg-purple-50 text-purple-500' },
+                                        { label: 'Batas', icon: <div className="w-4 h-[2px] bg-gray-400"></div>, color: 'bg-gray-50 text-gray-600' }
+                                    ].map((leg) => (
+                                        <div key={leg.label} className="flex flex-col items-center gap-2 shrink-0 w-[48px]">
+                                            <div className={`w-12 h-12 rounded-full ${leg.color} flex items-center justify-center border border-white shadow-[0_4px_10px_rgba(0,0,0,0.03)]`}>
+                                                {leg.icon}
+                                            </div>
+                                            <span className="text-[9px] font-black text-gray-800 text-center tracking-wide">{leg.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                </div>
                     </motion.div>
                 )}
             </AnimatePresence>
