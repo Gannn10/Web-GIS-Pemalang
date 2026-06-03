@@ -6,12 +6,12 @@ import { fetchWithCache } from '../services/apiCache';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import Swal from 'sweetalert2';
-import {
-    Search, MapPin, Navigation, Info, Menu, X, Home, Layers,
+import { Search, MapPin, Navigation, Info, Menu, X, Home, Layers,
     ChevronRight, Users, Map as MapIcon, Compass,
     Palmtree, Mountain, Landmark, Building2, Globe,
     CircleDot, Waves, SlidersHorizontal, User
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Custom SVG Icons to avoid lucide-react version compatibility issues
 const TreesIcon = ({ size = 18, className = "" }) => (
@@ -254,6 +254,26 @@ const MapResizer = ({ isSidebarOpen }) => {
     return null;
 };
 
+const MapCenterTracker = ({ isSelectingLoc, onCenterChange }) => {
+    const map = useMapEvents({
+        move() {
+            if (isSelectingLoc) {
+                const center = map.getCenter();
+                onCenterChange([center.lat, center.lng]);
+            }
+        }
+    });
+
+    useEffect(() => {
+        if (isSelectingLoc) {
+            const center = map.getCenter();
+            onCenterChange([center.lat, center.lng]);
+        }
+    }, [isSelectingLoc, map, onCenterChange]);
+
+    return null;
+};
+
 const MapEvents = ({ isSelectingLoc, onLocationSelected, onMapClick }) => {
     useMapEvents({
         click(e) {
@@ -385,6 +405,7 @@ const MapPage = () => {
         return savedRad ? parseInt(savedRad) : 15;
     });
     const [isSelectingLoc, setIsSelectingLoc] = useState(false);
+    const [mapCenter, setMapCenter] = useState(null);
     const [routePath, setRoutePath] = useState(null);
     const [activeRouteName, setActiveRouteName] = useState('');
     const [routeInfo, setRouteInfo] = useState(null);
@@ -988,11 +1009,50 @@ const MapPage = () => {
                         </Link>
                     </div>
 
-                    {/* Instruksi pilih lokasi */}
+                    {/* Instruksi pilih lokasi & Crosshair */}
                     {isSelectingLoc && (
-                        <div className="absolute top-24 left-1/2 transform -translate-x-1/2 z-[1000] bg-gray-900/90 text-white px-6 py-3 rounded-2xl text-xs font-black shadow-2xl animate-bounce border border-gray-700 uppercase tracking-widest">
-                            Klik area mana saja di Peta!
-                        </div>
+                        <>
+                            {/* Crosshair Overlay (tengah layar) - Minimalist */}
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full z-[2000] pointer-events-none flex flex-col items-center mt-2">
+                                <motion.div 
+                                    animate={{ y: [0, -6, 0] }} 
+                                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                                    className="text-blue-600"
+                                >
+                                    <MapPin size={40} strokeWidth={2} className="fill-blue-500 text-white drop-shadow-md" />
+                                </motion.div>
+                                <div className="w-5 h-1.5 bg-black/20 rounded-[100%] -mt-1.5 blur-[1.5px]"></div>
+                            </div>
+                            
+                            {/* Floating Action Bar */}
+                            <motion.div 
+                                initial={{ y: 50, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-[2000] w-[90%] md:w-[380px]"
+                            >
+                                <div className="bg-white/95 backdrop-blur-md p-4 md:p-5 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-gray-100 flex flex-col gap-3.5">
+                                    <div className="flex items-center justify-between px-1">
+                                        <div>
+                                            <p className="text-[13px] font-black text-gray-800 uppercase tracking-wider">Tentukan Titik Awal</p>
+                                            <p className="text-[10px] font-bold text-gray-400 mt-0.5 uppercase tracking-widest">Geser peta & arahkan pin ke lokasi</p>
+                                        </div>
+                                        <button onClick={() => setIsSelectingLoc(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+                                            <X size={14} strokeWidth={3} />
+                                        </button>
+                                    </div>
+                                    <button 
+                                        onClick={() => {
+                                            if (mapCenter) handleLocationSelected(mapCenter);
+                                            else handleLocationSelected([-7.0125, 109.3772]); // centerPemalang fallback
+                                        }}
+                                        className="w-full bg-[#004DA4] text-white font-black py-3.5 rounded-xl shadow-lg shadow-blue-900/20 hover:bg-[#003c80] active:scale-95 transition-all text-[11px] uppercase tracking-widest flex items-center justify-center gap-2"
+                                    >
+                                        <MapPin size={16} strokeWidth={2.5} />
+                                        Set Lokasi Disini
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </>
                     )}
 
                     {/* Floating Legend Card (Desktop Only) */}
@@ -1056,6 +1116,7 @@ const MapPage = () => {
                             userLoc={userLoc}
                         />
                         <MapEvents isSelectingLoc={isSelectingLoc} onLocationSelected={handleLocationSelected} onMapClick={() => setSelectedWisata(null)} />
+                        <MapCenterTracker isSelectingLoc={isSelectingLoc} onCenterChange={setMapCenter} />
 
                         {dataBatasPemalang && (
                             <GeoJSON 
@@ -1177,16 +1238,25 @@ const MapPage = () => {
             </div>
 
             {/* ===================== BOTTOM SHEET (Mobile Only) ===================== */}
-            <div className={`md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] transition-all duration-500 ease-in-out flex flex-col max-h-[60vh]
-                ${(selectedWisata || isSidebarOpen) ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100 pointer-events-auto'}`}
-            >
-                {/* Drag Handle */}
-                <div className="w-full flex justify-center py-3 shrink-0">
-                    <div className="w-12 h-[5px] bg-gray-200 rounded-full"></div>
-                </div>
+            <AnimatePresence>
+                {!(selectedWisata || isSidebarOpen) && (
+                    <motion.div
+                        initial={{ y: "100%", opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: "100%", opacity: 0 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        drag="y"
+                        dragConstraints={{ top: 0, bottom: 0 }}
+                        dragElastic={0.2}
+                        className="md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] flex flex-col max-h-[60vh]"
+                    >
+                        {/* Drag Handle */}
+                        <div className="w-full flex justify-center py-3 shrink-0 cursor-grab active:cursor-grabbing touch-none">
+                            <div className="w-12 h-[5px] bg-gray-200 rounded-full"></div>
+                        </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto no-scrollbar pb-6 px-5 flex flex-col gap-6">
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto no-scrollbar pb-6 px-5 flex flex-col gap-6">
                     {/* Legenda Peta */}
                     <div>
                         <div className="flex items-center justify-between mb-4">
@@ -1215,7 +1285,9 @@ const MapPage = () => {
                     </div>
 
                 </div>
-            </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* ===================== BOTTOM NAVIGATION (Mobile Only) ===================== */}
             <div className={`md:hidden absolute bottom-0 left-0 flex items-center justify-around bg-white border-t border-gray-100/80 w-full h-[60px] pb-safe z-[5000] shadow-[0_-4px_20px_rgba(0,0,0,0.02)] transition-all duration-500 ease-in-out
