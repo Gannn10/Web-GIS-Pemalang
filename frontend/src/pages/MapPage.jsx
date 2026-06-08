@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 import { Search, MapPin, Navigation, Info, Menu, X, Home, Layers,
     ChevronRight, Users, Map as MapIcon, Compass,
     Palmtree, Mountain, Landmark, Building2, Globe,
-    CircleDot, Waves, SlidersHorizontal, User
+    CircleDot, Waves, SlidersHorizontal, User, LayoutGrid, BarChart2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -198,10 +198,10 @@ const WisataCard = ({ item, index, userLoc, activeRouteName, routeInfo, onCekJal
     return (
         <div
             onClick={() => onSelect(item)}
-            className={`group rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer
+            className={`group rounded-2xl border-2 transition-all duration-300 overflow-hidden cursor-pointer
             ${isActive
                     ? 'border-blue-500 bg-blue-50/40 shadow-[0_8px_25px_rgba(59,130,246,0.08)]'
-                    : 'border-gray-100 bg-white hover:border-blue-300 hover:shadow-[0_8px_25px_rgba(0,0,0,0.04)]'}`}
+                    : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-[0_8px_25px_rgba(0,0,0,0.04)]'}`}
         >
             <div className="flex items-center gap-3 px-3 py-3">
                 {/* Thumbnail */}
@@ -277,9 +277,7 @@ const MapCenterTracker = ({ isSelectingLoc, onCenterChange }) => {
 const MapEvents = ({ isSelectingLoc, onLocationSelected, onMapClick }) => {
     useMapEvents({
         click(e) {
-            if (isSelectingLoc) {
-                onLocationSelected([e.latlng.lat, e.latlng.lng]);
-            } else {
+            if (!isSelectingLoc) {
                 onMapClick();
             }
         }
@@ -416,13 +414,26 @@ const MapPage = () => {
     const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
     const [isMobileLegendOpen, setIsMobileLegendOpen] = useState(false);
 
+    // Sidebar section states
+    const [sectionOpen, setSectionOpen] = useState({
+        titikAwal: true,
+        petaDasar: false,
+        destinasi: false,
+        simulator: false,
+    });
+    const [batasOpacity, setBatasOpacity] = useState(5);
+    const toggleSection = (key) => setSectionOpen(prev => ({ ...prev, [key]: !prev[key] }));
+    const expandAll = () => setSectionOpen({ titikAwal: true, petaDasar: true, destinasi: true, simulator: true });
+    const collapseAll = () => setSectionOpen({ titikAwal: false, petaDasar: false, destinasi: false, simulator: false });
+
     const centerPemalang = [-7.0125, 109.3772];
     const pemalangStyle = { 
-        color: '#1e40af',       // Outline biru tua tegas
-        weight: 2.5,            // Lebih tebal sedikit
-        fillColor: '#3b82f6',   // Warna biru di dalam area
-        fillOpacity: 0.05,      // Transparan default
-        dashArray: '4, 4'       // Garis putus-putus untuk batas kabupaten
+        color: '#1e40af',
+        weight: 4,
+        opacity: 1,
+        fillColor: '#3b82f6',
+        fillOpacity: batasOpacity / 100,
+        dashArray: '8, 5'
     };
 
     useEffect(() => { if (userLoc) localStorage.setItem('userLoc_skripsi', JSON.stringify(userLoc)); else localStorage.removeItem('userLoc_skripsi'); }, [userLoc]);
@@ -671,227 +682,291 @@ const MapPage = () => {
             <div className="flex flex-1 overflow-hidden relative w-full">
 
                 {/* ===================== SIDEBAR ===================== */}
-                <div className={`flex backdrop-blur-md bg-white/95 border border-gray-100/80 shadow-[0_20px_50px_rgba(0,0,0,0.12)] z-[2000] flex-col absolute transform transition-all duration-500 ease-in-out shrink-0 overflow-hidden
+                <div className={`flex bg-white backdrop-blur-md border border-gray-300 shadow-[0_4px_24px_rgba(0,0,0,0.12)] z-[2000] flex-col absolute transform transition-all duration-500 ease-in-out shrink-0 overflow-hidden
                     top-2 bottom-2 left-2 w-[calc(100vw-16px)] rounded-xl
-                    md:top-2 md:bottom-2 md:left-2 md:w-[380px] md:rounded-[22px]
+                    md:top-2 md:bottom-2 md:left-2 md:w-[330px] md:rounded-2xl
                     ${isSidebarOpen ? 'translate-x-0 opacity-100' : '-translate-x-[120%] opacity-0 pointer-events-none'}`}
                 >
                     {/* HEADER */}
-                    <div className="px-6 py-5 border-b border-gray-100/80 bg-white/50 backdrop-blur-md sticky top-0 z-50 shrink-0 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 shrink-0 transition-transform hover:rotate-3">
-                                <img src="/icon.png" alt="Logo" className="w-full h-full object-contain" />
+                    <div className="px-5 py-4 bg-gradient-to-r from-blue-100/80 to-blue-50/90 backdrop-blur-md sticky top-0 z-50 shrink-0 border-b-2 border-blue-200 shadow-[0_4px_20px_-10px_rgba(0,77,164,0.1)]">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 shrink-0 drop-shadow-sm hover:scale-105 transition-transform duration-300">
+                                    <img src="/icon.png" alt="Logo" className="w-full h-full object-contain" />
+                                </div>
+                                <div>
+                                    <h2 className="font-black bg-gradient-to-r from-[#004DA4] to-blue-500 bg-clip-text text-transparent text-[19px] leading-tight tracking-wide drop-shadow-sm">Peta Wisata</h2>
+                                    <p className="text-[10.5px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Kabupaten Pemalang</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="font-black text-[#004DA4] text-base leading-tight uppercase tracking-wide">Peta Wisata</h2>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Kabupaten Pemalang</p>
-                            </div>
+                            <button onClick={() => setIsSidebarOpen(false)}
+                                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#004DA4] hover:bg-blue-50 rounded-full transition-all active:scale-95"
+                            >
+                                <X size={16} strokeWidth={2.5} />
+                            </button>
                         </div>
-                        <button onClick={() => setIsSidebarOpen(false)}
-                            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all"
-                        >
-                            <X size={16} strokeWidth={2.5} />
-                        </button>
                     </div>
 
                     {/* SCROLLABLE CONTENT */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3 bg-slate-50/50 block">
 
-                        {/* Search and Kategori moved to floating layout on the Map */}
-
-                        {/* TITIK AWAL */}
-                        <div className="px-6 pt-6 pb-4">
-                            <p className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Tentukan Titik Awal</p>
-                            {userLoc ? (
-                                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[22px] p-5 text-white shadow-[0_12px_30px_rgba(37,99,235,0.25)] relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-xl"></div>
-                                    <div className="relative z-10">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
-                                                    <Navigation size={15} fill="white" className="rotate-45" />
-                                                </div>
-                                                <span className="text-[11px] font-black uppercase tracking-widest text-white">GPS Aktif</span>
-                                            </div>
-                                            <button onClick={clearLocation} className="text-[9px] font-black uppercase tracking-widest text-white bg-white/20 hover:bg-white/30 px-3.5 py-2 rounded-full transition-colors border border-white/10 backdrop-blur-md">Hapus</button>
-                                        </div>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">Radius Pencarian</span>
-                                            <span className="text-xs font-black text-white bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-sm">{radius} km</span>
-                                        </div>
-                                        <input type="range" min="1" max="50" className="w-full accent-white cursor-pointer h-1.5 bg-white/25 rounded-full appearance-none" value={radius} onChange={(e) => setRadius(parseInt(e.target.value))} />
-                                        <div className="flex justify-between text-[8px] font-bold text-blue-200 mt-2.5 uppercase tracking-widest"><span>1 km</span><span>50 km</span></div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex gap-4">
-                                    {/* GPS Otomatis Card */}
-                                    <button 
-                                        onClick={getLocationGPS}
-                                        className="flex-1 flex flex-col items-center justify-center p-5 bg-white border border-gray-100 hover:border-blue-200 hover:shadow-md rounded-[22px] transition-all duration-300 active:scale-[0.98] group shadow-[0_8px_20px_rgba(0,0,0,0.02)]"
-                                    >
-                                        <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
-                                            <LocateIcon size={20} />
-                                        </div>
-                                        <span className="text-[10px] font-black text-gray-700 uppercase tracking-wider text-center">GPS Otomatis</span>
-                                    </button>
-
-                                    {/* Pilih Manual Card */}
-                                    <button 
-                                        onClick={() => { setIsSelectingLoc(!isSelectingLoc); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
-                                        className={`flex-1 flex flex-col items-center justify-center p-5 bg-white border rounded-[22px] transition-all duration-300 active:scale-[0.98] group shadow-[0_8px_20px_rgba(0,0,0,0.02)]
-                                            ${isSelectingLoc 
-                                                ? 'border-amber-500 bg-amber-50/10 shadow-[0_4px_15px_rgba(245,158,11,0.15)] animate-pulse' 
-                                                : 'border-gray-100 hover:border-teal-200 hover:shadow-md'}`}
-                                    >
-                                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center mb-3 transition-transform group-hover:scale-105
-                                            ${isSelectingLoc ? 'bg-amber-500 text-white shadow-sm' : 'bg-teal-50 text-teal-600'}`}>
-                                            <MapPin size={20} className={isSelectingLoc ? 'animate-bounce' : ''} />
-                                        </div>
-                                        <span className="text-[10px] font-black text-gray-700 uppercase tracking-wider text-center">{isSelectingLoc ? 'Klik Peta' : 'Pilih Manual'}</span>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* RINGKASAN */}
-                        <div className="px-6 pb-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <p className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider">Ringkasan</p>
-                                <StatsIcon size={15} className="text-gray-400" />
-                            </div>
-                            <div className="bg-gradient-to-r from-blue-50/40 to-indigo-50/20 border border-slate-100 rounded-[22px] p-5 shadow-[0_8px_20px_rgba(0,0,0,0.02)] relative overflow-hidden flex items-center">
-                                {/* Left Section: Destinasi */}
-                                <div className="flex-1 text-center pr-3 border-r border-slate-200/50">
-                                    <p className="text-3xl font-black text-[#004DA4] leading-none">
-                                        {filteredWisata.length.toString().padStart(2, '0')}
-                                    </p>
-                                    <p className="text-[9px] text-gray-400 font-extrabold uppercase mt-2 tracking-widest">Destinasi</p>
-                                </div>
-
-                                {/* Right Section: Kategori */}
-                                <div className="flex-1 text-center pl-3 relative z-10">
-                                    <p className="text-3xl font-black text-[#007A64] leading-none">
-                                        {new Set(wisataList.map(w => w.nama_kategori).filter(Boolean)).size.toString().padStart(2, '0') || '04'}
-                                    </p>
-                                    <p className="text-[9px] text-gray-400 font-extrabold uppercase mt-2 tracking-widest">Kategori</p>
-                                </div>
-
-                                {/* SVG Watermark Graph Line and Stars matching mockup */}
-                                <svg className="absolute right-0 bottom-0 w-24 h-20 text-[#007A64]/10 pointer-events-none transform translate-y-2 translate-x-2" viewBox="0 0 100 100" fill="currentColor">
-                                    <path d="M 0,80 Q 25,50 50,70 T 100,40 L 100,100 L 0,100 Z" fill="url(#stats-gradient)" opacity="0.4" />
-                                    <circle cx="50" cy="70" r="4" />
-                                    <circle cx="100" cy="40" r="4" />
-                                    <path d="M 20,40 L 25,45 L 20,50 L 15,45 Z" />
-                                    <path d="M 80,20 L 83,23 L 80,26 L 77,23 Z" />
-                                    <defs>
-                                        <linearGradient id="stats-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" stopColor="currentColor" stopOpacity="0" />
-                                            <stop offset="100%" stopColor="currentColor" stopOpacity="0.15" />
-                                        </linearGradient>
-                                    </defs>
-                                </svg>
-                            </div>
-                        </div>
-
-                        {/* GIS SIMULATOR CARD */}
-                        <div className="px-6 pb-4">
+                        {/* ---- SECTION: TITIK AWAL ---- */}
+                        <div className={`bg-white rounded-[20px] overflow-hidden transition-all duration-300 ${
+                            sectionOpen.titikAwal 
+                                ? 'border-[1.5px] border-[#2E82F7] shadow-[0_4px_24px_rgba(46,130,247,0.12)]' 
+                                : 'border border-[#F1F3F9] shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)]'
+                        }`}>
                             <button
-                                onClick={() => setIsSimulatorOpen(!isSimulatorOpen)}
-                                className="w-full flex items-center justify-between p-4 bg-[#1E1E24] hover:bg-[#25252C] rounded-[22px] border border-slate-800 transition-all active:scale-[0.98] shadow-lg shadow-black/5"
+                                onClick={() => toggleSection('titikAwal')}
+                                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[#F8FAFC] transition-colors group"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-11 h-11 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center shrink-0">
-                                        <TerminalIcon size={18} />
+                                    <div className={`flex items-center justify-center transition-colors ${sectionOpen.titikAwal ? 'text-[#2E82F7]' : 'text-[#94A3B8]'}`}>
+                                        <LocateIcon size={18} strokeWidth={2.5} />
                                     </div>
-                                    <div className="text-left">
-                                        <h3 className="text-xs font-black text-white uppercase tracking-wider">Simulator GIS</h3>
-                                        <p className="text-[9px] text-gray-500 font-bold uppercase mt-0.5 tracking-wider">Analisis Geospasial v2.4</p>
-                                    </div>
+                                    <span className={`text-[14px] font-extrabold transition-colors ${sectionOpen.titikAwal ? 'text-[#1E293B]' : 'text-[#334155]'}`}>Titik Awal</span>
                                 </div>
-                                <ChevronRight size={16} className={`text-gray-400 transition-transform duration-300 ${isSimulatorOpen ? 'rotate-90 text-white' : ''}`} strokeWidth={3} />
+                                <ChevronRight
+                                    size={16}
+                                    strokeWidth={2.5}
+                                    className={`transition-transform duration-300 ${sectionOpen.titikAwal ? 'rotate-90 text-[#2E82F7]' : 'text-[#94A3B8]'}`}
+                                />
                             </button>
+                            {sectionOpen.titikAwal && (
+                                <div className="px-4 pb-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    {userLoc ? (
+                                        <div className="bg-gradient-to-br from-[#2E82F7] to-[#1464E6] rounded-[20px] p-5 text-white shadow-[0_8px_24px_rgba(46,130,247,0.3)] relative overflow-hidden">
+                                            {/* decorative radar rings centered on the paper plane */}
+                                            <div className="absolute top-6 right-[88px] flex items-center justify-center pointer-events-none">
+                                                <div className="absolute w-[90px] h-[90px] border-[1.5px] border-white/25 rounded-full"></div>
+                                                <div className="absolute w-[160px] h-[160px] border border-white/15 rounded-full"></div>
+                                                <div className="absolute w-[240px] h-[240px] border border-white/10 rounded-full"></div>
+                                                <div className="absolute w-[320px] h-[320px] border border-white/5 rounded-full"></div>
+                                                
+                                                {/* Paper plane icon wrapper */}
+                                                <div className="absolute w-10 h-10 rounded-full border-[1.5px] border-white/30 flex items-center justify-center bg-transparent backdrop-blur-sm">
+                                                    <Navigation size={18} strokeWidth={2.5} className="rotate-45 relative right-0.5 top-0.5" />
+                                                </div>
+                                            </div>
 
-                            {isSimulatorOpen && (
-                                <div className="mt-3 bg-slate-950 p-5 rounded-[22px] border border-slate-900 shadow-xl space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-300 font-mono text-[10px]">
-                                    {/* Window Controls */}
-                                    <div className="flex items-center justify-between pb-2 border-b border-slate-900/60 mb-2">
-                                        <div className="flex gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            <div className="flex items-start justify-between mb-4 relative z-10">
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1.5">
+                                                        <span className="w-2.5 h-2.5 bg-[#96F39A] rounded-full shadow-[0_0_8px_rgba(150,243,154,0.6)] animate-pulse"></span>
+                                                        <span className="text-[16px] font-extrabold text-white tracking-wide">GPS Aktif</span>
+                                                    </div>
+                                                    <span className="text-[11.5px] font-medium text-blue-100">Radius Pencarian</span>
+                                                </div>
+                                                
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <button onClick={clearLocation} className="text-[10px] font-extrabold text-[#2E82F7] bg-white hover:bg-gray-50 px-3.5 py-1 rounded-full shadow-sm transition-colors relative z-20">
+                                                        Hapus
+                                                    </button>
+                                                    
+                                                    {/* The icon is now part of the background decoration block above to center the rings */}
+                                                    <div className="w-10 h-10"></div>
+
+                                                    
+                                                    <span className="text-[24px] font-black text-white leading-none mt-6">{radius} km</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="relative z-10 flex items-center gap-3 mb-1 mt-2">
+                                                <span className="text-[10px] font-semibold text-blue-100">1 km</span>
+                                                <input type="range" min="1" max="50" className="flex-1 accent-white cursor-pointer h-1.5 bg-white/20 rounded-full appearance-none outline-none" value={radius} onChange={(e) => setRadius(parseInt(e.target.value))} />
+                                                <span className="text-[10px] font-semibold text-blue-100">50 km</span>
+                                            </div>
                                         </div>
-                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest font-sans">Haversine Engine v2.4</span>
-                                    </div>
-
-                                    {!userLoc ? (
-                                        <p className="text-amber-500/90 font-bold italic leading-relaxed">
-                                            &gt; Tentukan titik awal GPS Anda terlebih dahulu untuk memulai simulasi rumus Haversine.
-                                        </p>
-                                    ) : !selectedWisata ? (
-                                        <p className="text-amber-500/90 font-bold italic leading-relaxed">
-                                            &gt; Pilih atau klik salah satu destinasi wisata di peta/daftar untuk melihat simulasi perhitungan rumusnya.
-                                        </p>
                                     ) : (
-                                        <div className="space-y-3 text-slate-300">
-                                            <div className="pb-1.5 border-b border-slate-900/60">
-                                                <p className="font-bold text-slate-400 uppercase text-[8px] mb-1">Coordinates Input:</p>
-                                                <p><span className="text-rose-400">P1 (User)</span>: {userLoc[0].toFixed(5)}, {userLoc[1].toFixed(5)}</p>
-                                                <p><span className="text-emerald-400">P2 ({selectedWisata.nama_wisata.slice(0, 12)}...)</span>: {parseFloat(selectedWisata.latitude).toFixed(5)}, {parseFloat(selectedWisata.longitude).toFixed(5)}</p>
-                                            </div>
+                                        <div className="flex gap-3">
+                                            {/* GPS Otomatis Card */}
+                                            <button
+                                                onClick={getLocationGPS}
+                                                className="relative flex-1 flex flex-col items-center justify-center p-4 bg-gradient-to-br from-[#2E82F7] to-[#1464E6] rounded-[20px] transition-all duration-300 active:scale-[0.97] group shadow-[0_8px_20px_rgba(46,130,247,0.25)] overflow-hidden"
+                                            >
+                                                {/* Decorative radar rings */}
+                                                <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90px] h-[90px] border-[1.5px] border-white/25 rounded-full"></div>
+                                                <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] border border-white/15 rounded-full"></div>
+                                                <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] border border-white/5 rounded-full"></div>
+                                                
+                                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 relative z-10 shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-transform group-hover:scale-105">
+                                                    <LocateIcon size={20} className="text-[#2E82F7]" />
+                                                </div>
+                                                <div className="relative z-10 text-center">
+                                                    <span className="block text-[13px] font-extrabold text-white mb-0.5">GPS Otomatis</span>
+                                                    <span className="block text-[9.5px] font-medium text-white/80 leading-snug">Gunakan lokasi<br/>saat ini</span>
+                                                </div>
+                                            </button>
 
-                                            <div className="space-y-2">
-                                                <p className="font-bold text-slate-400 uppercase text-[8px] mb-1">1. Delta Lat & Lon (Radian):</p>
-                                                {(() => {
-                                                    const lat1 = userLoc[0] * (Math.PI / 180);
-                                                    const lat2 = parseFloat(selectedWisata.latitude) * (Math.PI / 180);
-                                                    const lon1 = userLoc[1] * (Math.PI / 185); // Note: correct conversion to match calculation standard
-                                                    const lon2 = parseFloat(selectedWisata.longitude) * (Math.PI / 180);
-                                                    const dLat = lat2 - lat1;
-                                                    const dLon = lon2 - lon1;
-                                                    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-                                                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                                                    const d = 6371 * c;
+                                            {/* Pilih Manual Card */}
+                                            <button
+                                                onClick={() => { setIsSelectingLoc(!isSelectingLoc); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
+                                                className={`relative flex-1 flex flex-col items-center justify-center p-4 rounded-[20px] transition-all duration-300 active:scale-[0.97] group border-2 overflow-hidden
+                                                    ${isSelectingLoc
+                                                        ? 'border-[#2E82F7] bg-blue-50/50 shadow-[0_8px_20px_rgba(46,130,247,0.1)]'
+                                                        : 'border-[#F1F3F9] bg-white hover:border-[#E2E8F0] shadow-[0_4px_12px_rgba(0,0,0,0.02)]'}`}
+                                            >
+                                                {/* Subtle decorative dashed corners (approximated with simple shapes) */}
+                                                <div className="absolute -top-2 -right-2 w-10 h-10 border-b-2 border-l-2 border-dashed border-gray-200/60 rounded-bl-[20px]"></div>
+                                                <div className="absolute -bottom-2 -left-2 w-10 h-10 border-t-2 border-r-2 border-dashed border-gray-200/60 rounded-tr-[20px]"></div>
 
-                                                    return (
-                                                        <>
-                                                            <p>dLat = {dLat.toFixed(6)} rad</p>
-                                                            <p>dLon = {dLon.toFixed(6)} rad</p>
-                                                            <p className="font-bold text-slate-400 uppercase text-[8px] mt-2.5 mb-1">2. Hitung Nilai 'a' (Haversine):</p>
-                                                            <p className="text-slate-500 break-all leading-normal">a = sin²(dLat/2) + cos(lat1)·cos(lat2)·sin²(dLon/2)</p>
-                                                            <p>a = <span className="text-amber-400">{a.toFixed(8)}</span></p>
-                                                            <p className="font-bold text-slate-400 uppercase text-[8px] mt-2.5 mb-1">3. Hitung Nilai 'c':</p>
-                                                            <p className="text-slate-500 leading-normal">c = 2 · atan2(√a, √(1-a))</p>
-                                                            <p>c = <span className="text-amber-400">{c.toFixed(8)}</span></p>
-                                                            <p className="font-bold text-slate-400 uppercase text-[8px] mt-2.5 mb-1">4. Hasil Akhir Jarak (R = 6371 km):</p>
-                                                            <p className="text-slate-500 leading-normal">d = R · c</p>
-                                                            <p className="text-cyan-400 font-bold text-xs mt-1">d = {d.toFixed(3)} km</p>
-                                                        </>
-                                                    );
-                                                })()}
-                                            </div>
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 relative z-10 transition-transform group-hover:scale-105
+                                                    ${isSelectingLoc ? 'bg-[#2E82F7] text-white shadow-[0_4px_12px_rgba(46,130,247,0.3)]' : 'bg-[#F1F4F9] text-[#2E82F7]'}`}>
+                                                    <MapPin size={20} className={isSelectingLoc ? 'animate-bounce' : ''} />
+                                                </div>
+                                                <div className="relative z-10 text-center">
+                                                    <span className={`block text-[13px] font-extrabold mb-0.5 ${isSelectingLoc ? 'text-[#2E82F7]' : 'text-[#334155]'}`}>
+                                                        {isSelectingLoc ? 'Klik Peta' : 'Pilih Manual'}
+                                                    </span>
+                                                    <span className="block text-[9.5px] font-medium text-[#94A3B8] leading-snug">Pilih titik awal<br/>pada peta</span>
+                                                </div>
+                                            </button>
                                         </div>
                                     )}
                                 </div>
                             )}
                         </div>
 
-                        {/* SEMUA DESTINASI */}
-                        <div className="px-6 pb-12">
-                            <div className="flex items-center justify-between mb-4">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Destinasi Populer</p>
-                                <button
-                                    onClick={() => setIsListExpanded(!isListExpanded)}
-                                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-gray-700 transition-all active:scale-95"
-                                >
-                                    <ChevronRight size={15} className={`transition-transform duration-300 ${isListExpanded ? 'rotate-90' : ''}`} strokeWidth={2.5} />
-                                </button>
-                            </div>
+                        {/* Ringkasan statistik mini */}
+                        <div className="px-1 py-1">
+                            <div className="flex items-center justify-between bg-white rounded-[20px] px-3 py-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-[#F1F3F9] transition-all duration-300">
+                                
+                                {/* Destinasi */}
+                                <div className="text-center flex-1 flex flex-col items-center group cursor-default">
+                                    <div className="w-10 h-10 rounded-full bg-[#EEF4FF] flex items-center justify-center mb-2 transition-transform group-hover:scale-110">
+                                        <MapPin size={18} className="text-[#2E82F7]" />
+                                    </div>
+                                    <p className="text-[20px] leading-none font-black text-[#1E293B] mb-1">{filteredWisata.length.toString().padStart(2, '0')}</p>
+                                    <p className="text-[10px] text-[#64748B] font-semibold mb-2">Destinasi</p>
+                                    <div className="w-6 h-1 rounded-full bg-[#2E82F7]"></div>
+                                </div>
 
-                            {isListExpanded && (
-                                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                {/* Kategori */}
+                                <div className="text-center flex-1 flex flex-col items-center group cursor-default">
+                                    <div className="w-10 h-10 rounded-full bg-[#F0FDF4] flex items-center justify-center mb-2 transition-transform group-hover:scale-110">
+                                        <LayoutGrid size={18} className="text-[#22C55E]" />
+                                    </div>
+                                    <p className="text-[20px] leading-none font-black text-[#1E293B] mb-1">{new Set(wisataList.map(w => w.nama_kategori).filter(Boolean)).size.toString().padStart(2, '0')}</p>
+                                    <p className="text-[10px] text-[#64748B] font-semibold mb-2">Kategori</p>
+                                    <div className="w-6 h-1 rounded-full bg-[#22C55E]"></div>
+                                </div>
+
+                                {/* Total */}
+                                <div className="text-center flex-1 flex flex-col items-center group cursor-default">
+                                    <div className="w-10 h-10 rounded-full bg-[#F5F3FF] flex items-center justify-center mb-2 transition-transform group-hover:scale-110">
+                                        <BarChart2 size={18} className="text-[#A855F7]" />
+                                    </div>
+                                    <p className="text-[20px] leading-none font-black text-[#1E293B] mb-1">{wisataList.length.toString().padStart(2, '0')}</p>
+                                    <p className="text-[10px] text-[#64748B] font-semibold mb-2">Total</p>
+                                    <div className="w-6 h-1 rounded-full bg-[#A855F7]"></div>
+                                </div>
+
+                            </div>
+                        </div>
+                        {/* ---- SECTION: SIMULATOR GIS ---- */}
+                        <div className="bg-white border border-[#F1F3F9] rounded-[20px] shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden transition-all">
+                            <button
+                                onClick={() => toggleSection('simulator')}
+                                className="w-full flex items-center justify-between p-3 transition-colors relative overflow-hidden group"
+                            >
+                                {/* Subtle Background Pattern */}
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#2E82F7 1px, transparent 1px)', backgroundSize: '12px 12px' }}></div>
+                                
+                                <div className="flex items-center gap-3 relative z-10">
+                                    <div className="w-[42px] h-[42px] rounded-2xl bg-gradient-to-br from-[#2E82F7] to-[#1464E6] shadow-[0_4px_12px_rgba(46,130,247,0.3)] flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform">
+                                        <Compass size={20} strokeWidth={2} />
+                                    </div>
+                                    <div className="text-left">
+                                        <span className="block text-[14px] font-extrabold text-[#1E293B] mb-0.5">Simulator GIS</span>
+                                        <span className="block text-[10px] font-medium text-[#94A3B8]">Simulasi & analisis spasial</span>
+                                    </div>
+                                </div>
+                                <ChevronRight
+                                    size={16}
+                                    strokeWidth={2.5}
+                                    className={`text-[#94A3B8] relative z-10 transition-transform duration-300 ${sectionOpen.simulator ? 'rotate-90' : ''}`}
+                                />
+                            </button>
+                            {sectionOpen.simulator && (
+                                <div className="px-4 pb-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-[10px]">
+                                        <div className="flex items-center justify-between pb-2 border-b border-slate-800 mb-2">
+                                            <div className="flex gap-1">
+                                                <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                                                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                            </div>
+                                            <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest font-sans">Haversine v2.4</span>
+                                        </div>
+                                        {!userLoc ? (
+                                            <p className="text-amber-500/90 font-bold italic leading-relaxed">&gt; Tentukan titik awal GPS terlebih dahulu.</p>
+                                        ) : !selectedWisata ? (
+                                            <p className="text-amber-500/90 font-bold italic leading-relaxed">&gt; Pilih destinasi wisata di peta.</p>
+                                        ) : (
+                                            <div className="space-y-2 text-slate-300">
+                                                <div className="pb-1 border-b border-slate-800">
+                                                    <p className="font-bold text-slate-500 uppercase text-[8px] mb-0.5">Input:</p>
+                                                    <p><span className="text-rose-400">P1</span>: {userLoc[0].toFixed(4)}, {userLoc[1].toFixed(4)}</p>
+                                                    <p><span className="text-emerald-400">P2</span>: {parseFloat(selectedWisata.latitude).toFixed(4)}, {parseFloat(selectedWisata.longitude).toFixed(4)}</p>
+                                                </div>
+                                                {(() => {
+                                                    const lat1 = userLoc[0] * (Math.PI / 180);
+                                                    const lat2 = parseFloat(selectedWisata.latitude) * (Math.PI / 180);
+                                                    const lon1 = userLoc[1] * (Math.PI / 185);
+                                                    const lon2 = parseFloat(selectedWisata.longitude) * (Math.PI / 180);
+                                                    const dLat = lat2 - lat1;
+                                                    const dLon = lon2 - lon1;
+                                                    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+                                                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                                                    const d = 6371 * c;
+                                                    return (
+                                                        <>
+                                                            <p>dLat = {dLat.toFixed(5)} rad</p>
+                                                            <p>dLon = {dLon.toFixed(5)} rad</p>
+                                                            <p>a = <span className="text-amber-400">{a.toFixed(6)}</span></p>
+                                                            <p>c = <span className="text-amber-400">{c.toFixed(6)}</span></p>
+                                                            <p className="text-cyan-400 font-bold text-[11px] mt-1">d = {d.toFixed(3)} km</p>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ---- SECTION: WISATA ---- */}
+                        <div className="bg-white border border-[#F1F3F9] rounded-[20px] shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden transition-all mt-3">
+                            <button
+                                onClick={() => toggleSection('destinasi')}
+                                className="w-full flex items-center justify-between p-3 transition-colors relative overflow-hidden group"
+                            >
+                                {/* Subtle Background Pattern */}
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#22C55E 1px, transparent 1px)', backgroundSize: '12px 12px' }}></div>
+                                
+                                <div className="flex items-center gap-3 relative z-10">
+                                    <div className="w-[42px] h-[42px] rounded-2xl bg-gradient-to-br from-[#22C55E] to-[#16A34A] shadow-[0_4px_12px_rgba(34,197,94,0.3)] flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform">
+                                        <MapPin size={20} strokeWidth={2} />
+                                    </div>
+                                    <div className="text-left">
+                                        <span className="block text-[14px] font-extrabold text-[#1E293B] mb-0.5">Wisata</span>
+                                        <span className="block text-[10px] font-medium text-[#94A3B8]">Jelajahi destinasi wisata</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 relative z-10">
+                                    <span className="text-[10px] font-bold text-[#16A34A] bg-[#DCFCE7] px-2 py-0.5 rounded-full">{filteredWisata.length}</span>
+                                    <ChevronRight
+                                        size={16}
+                                        strokeWidth={2.5}
+                                        className={`text-[#94A3B8] transition-transform duration-300 ${sectionOpen.destinasi ? 'rotate-90' : ''}`}
+                                    />
+                                </div>
+                            </button>
+                            {sectionOpen.destinasi && (
+                                <div className="px-3 pb-3 animate-in fade-in slide-in-from-top-1 duration-200">
                                     {filteredWisata.length > 0 ? (
-                                        <div className="space-y-2.5">
+                                        <div className="space-y-1.5 max-h-[45vh] overflow-y-auto custom-scrollbar pr-1.5">
                                             {filteredWisata.map((item, index) => (
                                                 <WisataCard key={item.wisata_id} item={item} index={index}
                                                     userLoc={userLoc} activeRouteName={activeRouteName} routeInfo={routeInfo}
@@ -902,17 +977,130 @@ const MapPage = () => {
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 rounded-2xl border border-gray-100/80">
-                                            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 text-gray-300">
-                                                <Search size={28} strokeWidth={1.5} />
-                                            </div>
-                                            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Tidak ditemukan</p>
-                                            <p className="text-[10px] text-gray-400 mt-1.5 font-bold">Coba kata kunci atau kategori lain</p>
+                                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                                            <Search size={24} strokeWidth={1.5} className="text-gray-300 mb-2" />
+                                            <p className="text-[11px] font-semibold text-gray-400">Tidak ditemukan</p>
                                         </div>
                                     )}
                                 </div>
                             )}
                         </div>
+
+                        {/* ---- SECTION: PETA DASAR ---- */}
+                        <div className="bg-white border border-[#F1F3F9] rounded-[20px] shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden transition-all mt-3 mb-4">
+                            <button
+                                onClick={() => toggleSection('petaDasar')}
+                                className="w-full flex items-center justify-between p-3 transition-colors relative overflow-hidden group"
+                            >
+                                {/* Subtle Background Pattern */}
+                                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#A855F7 1px, transparent 1px)', backgroundSize: '12px 12px' }}></div>
+                                
+                                <div className="flex items-center gap-3 relative z-10">
+                                    <div className="w-[42px] h-[42px] rounded-2xl bg-gradient-to-br from-[#A855F7] to-[#7E22CE] shadow-[0_4px_12px_rgba(168,85,247,0.3)] flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform">
+                                        <Layers size={20} strokeWidth={2} />
+                                    </div>
+                                    <div className="text-left">
+                                        <span className="block text-[14px] font-extrabold text-[#1E293B] mb-0.5">Peta Dasar</span>
+                                        <span className="block text-[10px] font-medium text-[#94A3B8]">Kelola layer & basemap</span>
+                                    </div>
+                                </div>
+                                <ChevronRight
+                                    size={16}
+                                    strokeWidth={2.5}
+                                    className={`text-[#94A3B8] relative z-10 transition-transform duration-300 ${sectionOpen.petaDasar ? 'rotate-90' : ''}`}
+                                />
+                            </button>
+                            {sectionOpen.petaDasar && (
+                                <div className="px-4 pb-3 space-y-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    {[
+                                        { key: 'streets', label: 'Open Street Map' },
+                                        { key: 'minimalist', label: 'Minimalist' },
+                                        { key: 'satellite', label: 'Satellite' },
+                                    ].map(({ key, label }) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => setMapType(key)}
+                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left ${
+                                                mapType === key
+                                                    ? 'bg-blue-50'
+                                                    : 'hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            {/* Custom radio */}
+                                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                                mapType === key ? 'border-blue-500' : 'border-gray-300'
+                                            }`}>
+                                                {mapType === key && (
+                                                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                                )}
+                                            </div>
+                                            <span className={`text-[12px] font-medium ${
+                                                mapType === key ? 'text-blue-700 font-semibold' : 'text-gray-600'
+                                            }`}>{label}</span>
+                                        </button>
+                                    ))}
+                                    {/* Batas Wilayah opacity slider */}
+                                    <div className="pt-2 px-1">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <span className="text-[11px] text-gray-500 font-medium">Transparansi Batas</span>
+                                            <span className="text-[11px] font-semibold text-blue-600">{batasOpacity}</span>
+                                        </div>
+                                        <div className="relative flex items-center gap-2">
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="30"
+                                                value={batasOpacity}
+                                                onChange={(e) => setBatasOpacity(parseInt(e.target.value))}
+                                                className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                                                style={{
+                                                    background: `linear-gradient(to right, #2563eb ${(batasOpacity/30)*100}%, #e5e7eb ${(batasOpacity/30)*100}%)`
+                                                }}
+                                            />
+                                            <div className="w-5 h-5 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                                                <SlidersHorizontal size={10} className="text-gray-500" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ---- BOTTOM PROMO BANNER ---- */}
+                        <div className="mt-2 mb-2 px-1">
+                            <div className="relative bg-gradient-to-br from-[#E6F0FF] to-[#D6E6FE] rounded-[20px] overflow-hidden shadow-[0_4px_20px_rgba(46,130,247,0.15)] border border-white/50 p-5">
+                                {/* Decorative elements */}
+                                <div className="absolute right-0 bottom-0 opacity-40 mix-blend-multiply w-[180px] h-[180px] translate-x-8 translate-y-8" style={{ background: 'radial-gradient(circle, #2E82F7 0%, transparent 70%)'}}></div>
+                                <div className="absolute left-0 top-0 opacity-30 mix-blend-multiply w-[100px] h-[100px] -translate-x-4 -translate-y-4" style={{ background: 'radial-gradient(circle, #22C55E 0%, transparent 70%)'}}></div>
+                                
+                                {/* Content */}
+                                <div className="relative z-10 w-[70%]">
+                                    <span className="text-[10px] font-bold text-[#2E82F7] tracking-wider uppercase mb-1 block">Jelajahi keindahan</span>
+                                    <h3 className="text-[22px] font-black text-[#1E293B] leading-none mb-2">Pemalang</h3>
+                                    <p className="text-[9px] text-[#475569] font-medium leading-relaxed mb-4">Temukan berbagai wisata menarik di Kabupaten Pemalang</p>
+                                    
+                                    <button 
+                                        onClick={() => {
+                                            setSectionOpen(prev => ({ ...prev, destinasi: true }));
+                                        }}
+                                        className="flex items-center gap-1.5 bg-[#2E82F7] hover:bg-[#1464E6] text-white px-3.5 py-2 rounded-full text-[10px] font-bold shadow-[0_4px_12px_rgba(46,130,247,0.3)] transition-all active:scale-95 group"
+                                    >
+                                        Mulai Jelajah
+                                        <div className="w-4 h-4 bg-white text-[#2E82F7] rounded-full flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                                            <ChevronRight size={12} strokeWidth={3} />
+                                        </div>
+                                    </button>
+                                </div>
+                                
+                                {/* Abstract Landscape Graphic */}
+                                <div className="absolute right-[-10px] bottom-0 w-[45%] h-[85%] z-0 pointer-events-none flex items-end justify-end">
+                                    <Mountain size={100} className="text-[#2E82F7] opacity-20 absolute -bottom-4 -right-4" strokeWidth={1} />
+                                    <Palmtree size={60} className="text-[#22C55E] opacity-30 absolute bottom-4 right-8" strokeWidth={1.5} />
+                                    <Landmark size={80} className="text-[#1E293B] opacity-10 absolute bottom-0 right-0" strokeWidth={1.5} />
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -922,7 +1110,7 @@ const MapPage = () => {
                     {/* Floating Search & Category Panel */}
                     <div className={`absolute top-4 md:top-6 z-[1000] transition-all duration-500 ease-in-out flex flex-col gap-3 w-full md:w-auto
                         ${isSidebarOpen
-                            ? 'left-0 md:left-[400px] opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'
+                            ? 'left-0 md:left-[350px] opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'
                             : 'left-0 md:left-6 opacity-100 pointer-events-auto'
                         }`}
                     >
@@ -966,7 +1154,7 @@ const MapPage = () => {
                                         onClick={() => setKategori(kat.value)}
                                         className={`flex items-center gap-2 py-2 px-4 rounded-full text-xs font-black transition-all shrink-0 border border-gray-100 shadow-sm active:scale-95 md:text-[12px] md:py-2.5 md:px-5.5 md:gap-2.5 md:rounded-full hover:-translate-y-0.5 hover:shadow-md transition-all duration-300
                                             ${isActive
-                                                ? 'bg-[#004DA4] text-white border-[#004DA4] shadow-blue-900/10'
+                                                ? 'bg-blue-500 text-white border-blue-500 shadow-[0_4px_12px_rgba(59,130,246,0.25)]'
                                                 : 'bg-white text-gray-600 border-white hover:bg-gray-50'
                                             }`}
                                     >
@@ -1171,7 +1359,13 @@ const MapPage = () => {
                                     key={item.wisata_id}
                                     position={[parseFloat(item.latitude), parseFloat(item.longitude)]}
                                     icon={createCustomIcon(item.nama_kategori, isActive, !isInside)}
-                                    eventHandlers={{ click: () => setSelectedWisata(item) }}
+                                    eventHandlers={{ 
+                                        click: () => {
+                                            if (!isSelectingLoc) {
+                                                setSelectedWisata(item);
+                                            }
+                                        } 
+                                    }}
                                 >
                                 </Marker>
                             );
@@ -1201,7 +1395,7 @@ const MapPage = () => {
                                             </div>
                                             <h3 className="text-[14px] md:text-xl font-black text-gray-900 leading-tight mb-0.5 md:mb-1 pr-6">{selectedWisata.nama_wisata}</h3>
                                             <p className="text-[9px] md:text-xs text-gray-400 font-bold line-clamp-2 md:line-clamp-2 leading-relaxed">
-                                                {selectedWisata.deskripsi || `Nikmati keindahan ${selectedWisata.nama_wisata} di Kabupaten Pemalang.`}
+                                                {selectedWisata.deskripsi?.trim() || `Nikmati keindahan ${selectedWisata.nama_wisata} di Kabupaten Pemalang.`}
                                             </p>
                                         </div>
 
@@ -1215,10 +1409,10 @@ const MapPage = () => {
                                         </div>
 
                                         <div className="flex gap-2 mt-1.5 md:mt-2">
-                                            <Link to={`/wisata/${selectedWisata.wisata_id}`} className="flex-1 py-2 md:py-3 bg-blue-500 text-white text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-xl md:rounded-2xl text-center shadow-lg shadow-blue-100 hover:bg-blue-600 transition active:scale-95 flex items-center justify-center">Lihat Detail</Link>
+                                            <Link to={`/wisata/${selectedWisata.wisata_id}`} className="flex-[1.5] py-2 md:py-3 bg-blue-500 text-white text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-xl md:rounded-2xl text-center shadow-lg shadow-blue-100 hover:bg-blue-600 transition active:scale-95 flex items-center justify-center">Lihat Detail</Link>
                                             <button
                                                 onClick={() => getRoute(selectedWisata.latitude, selectedWisata.longitude, selectedWisata.nama_wisata)}
-                                                className="px-4 md:px-6 py-2 md:py-3 bg-gray-50 text-gray-700 text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-xl md:rounded-2xl hover:bg-gray-100 transition flex items-center justify-center gap-1.5 active:scale-95"
+                                                className="flex-1 py-2 md:py-3 bg-gray-50 text-gray-700 text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-xl md:rounded-2xl hover:bg-gray-100 transition flex items-center justify-center gap-1.5 active:scale-95"
                                             >
                                                 <Navigation size={12} className="md:w-3.5 md:h-3.5" strokeWidth={3} />
                                                 Rute
@@ -1235,7 +1429,7 @@ const MapPage = () => {
             {/* ===================== BOTTOM SHEET (Mobile Only) ===================== */}
             <AnimatePresence>
                 {/* Mobile Legend Bottom Sheet */}
-                {!(selectedWisata || isSidebarOpen) && (
+                {!(selectedWisata || isSidebarOpen || isSelectingLoc) && (
                     <motion.div
                         initial={false}
                         animate={{ y: isMobileLegendOpen ? 0 : 85 }}
@@ -1302,9 +1496,6 @@ const MapPage = () => {
                 <div className="flex flex-col items-center gap-1 text-blue-500 w-16 transition-colors cursor-pointer">
                     <div className="relative">
                         <MapPin size={22} strokeWidth={2.5} className="fill-blue-500 text-white" />
-                        <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-white rounded-full flex items-center justify-center">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                        </div>
                     </div>
                     <span className="text-[9px] font-black tracking-widest">Explore</span>
                 </div>

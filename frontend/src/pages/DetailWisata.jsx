@@ -61,6 +61,65 @@ const getWeatherDescription = (code) => {
     return wmoCodes[code] || { text: 'Berawan', icon: '⛅' };
 };
 
+const getFacilityStyle = (name) => {
+    if (!name) return { label: '', bg: '#F3F4F6', icon: null };
+    const n = name.toLowerCase();
+    
+    if (n.includes('toilet') || n.includes('wc') || n.includes('kamar mandi')) {
+        return {
+            label: 'Toilet',
+            bg: '#F8F9FE',
+            icon: <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><path d="M9 8v6m0-6h-2v4m2-4h2v4m-2 2v5m0-5h-2m2 0h2"/><path d="M15 8l-2 6h1v7h2v-7h1l-2-6z"/></svg>
+        };
+    }
+    
+    if (n.includes('parkir')) {
+        return {
+            label: 'Parkir',
+            bg: '#F0F6FF',
+            icon: <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 16V8h4a2 2 0 0 1 0 4H9"/></svg>
+        };
+    }
+    
+    if (n.includes('makan') || n.includes('kuliner') || n.includes('restoran') || n.includes('kantin')) {
+        return {
+            label: 'Kuliner',
+            bg: '#F8F5FF',
+            icon: <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9333EA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 2v20"/><path d="M17 2a2 2 0 0 1 2 2v3a2 2 0 0 1-4 0V4a2 2 0 0 1 2-2z"/><path d="M7 2v20"/><path d="M3 2v6c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v6"/></svg>
+        };
+    }
+    
+    if (n.includes('foto') || n.includes('selfie') || n.includes('kamera')) {
+        return {
+            label: 'Spot Foto',
+            bg: '#F8F9FA',
+            icon: <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        };
+    }
+    
+    if (n.includes('gazebo') || n.includes('saung') || n.includes('pendopo')) {
+        return {
+            label: 'Gazebo',
+            bg: '#F0FDF4',
+            icon: <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2937" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v10"/><path d="M19 10v10"/><path d="M3 20h18" stroke="#059669" strokeWidth="2"/><path d="M9 20v-4h6v4"/></svg>
+        };
+    }
+    
+    if (n.includes('ibadah') || n.includes('mushola') || n.includes('masjid')) {
+        return {
+            label: 'Tempat Ibadah',
+            bg: '#F6F8F6',
+            icon: <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2937" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 22V12"/><path d="M16 22V12"/><path d="M8 12a4 4 0 0 1 8 0"/><path d="M12 8a2 2 0 0 0-2-2 2 2 0 0 1 4 0 2 2 0 0 0-2 2z"/><path d="M4 22h16"/><path d="M16 16c2.5 0 4 1.5 4 4v2"/><path d="M8 16C5.5 16 4 17.5 4 20v2"/><path d="M19 8a2 2 0 0 1-2.83-2.83 3 3 0 1 0 3.66 3.66 2 2 0 0 1-.83-.83z"/><path d="M13 18c1-1 3-1 3 1v3h-6v-3c0-2 2-2 3-1z" stroke="#059669"/></svg>
+        };
+    }
+    
+    return {
+        label: name,
+        bg: '#F3F4F6',
+        icon: <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    };
+};
+
 const DetailWisata = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -525,37 +584,36 @@ const DetailWisata = () => {
                                     <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1A1C1E', letterSpacing: '-0.02em', marginBottom: 24 }}>Fasilitas Tersedia</h2>
                                     {wisata.fasilitas && wisata.fasilitas.length > 0 ? (
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-                                            {wisata.fasilitas.map((f, i) => (
-                                                <div
-                                                    key={i}
-                                                    className="dw-facility-chip"
-                                                    style={{
-                                                        display: 'flex', alignItems: 'center', gap: 10,
-                                                        padding: '10px 18px 10px 10px',
-                                                        background: '#fff',
-                                                        border: '1.5px solid #E8E8EA',
-                                                        borderRadius: 9999,
-                                                        boxShadow: '0 2px 8px rgba(0,77,164,0.06)',
-                                                        cursor: 'default',
-                                                    }}
-                                                >
-                                                    <div style={{
-                                                        width: 36, height: 36, borderRadius: '50%',
-                                                        background: '#EEF4FF',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        fontSize: 18, flexShrink: 0,
-                                                    }}>
-                                                        {f.icon && (f.icon.includes('/') || f.icon.includes('.') || f.icon.startsWith('http')) ? (
-                                                            <img src={f.icon} alt={f.nama_fasilitas} style={{ width: 20, height: 20, objectFit: 'contain' }} />
-                                                        ) : (
-                                                            f.icon
-                                                        )}
+                                            {wisata.fasilitas.map((f, i) => {
+                                                const style = getFacilityStyle(f.nama_fasilitas);
+                                                return (
+                                                    <div
+                                                        key={i}
+                                                        className="dw-facility-chip"
+                                                        style={{
+                                                            display: 'flex', alignItems: 'center', gap: 14,
+                                                            padding: '8px 24px 8px 8px',
+                                                            background: '#fff',
+                                                            border: '1px solid #F1F1F4',
+                                                            borderRadius: 9999,
+                                                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                                            cursor: 'default',
+                                                        }}
+                                                    >
+                                                        <div style={{
+                                                            width: 46, height: 46, borderRadius: '50%',
+                                                            background: style.bg,
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            flexShrink: 0,
+                                                        }}>
+                                                            {style.icon}
+                                                        </div>
+                                                        <span className="text-sm font-bold" style={{ color: '#1A1C1E', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>
+                                                            {style.label}
+                                                        </span>
                                                     </div>
-                                                    <span className="text-xs xs:text-sm font-bold" style={{ color: '#1A1C1E', whiteSpace: 'nowrap' }}>
-                                                        {f.nama_fasilitas}
-                                                    </span>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     ) : (
                                         <div style={{ padding: '48px 24px', textAlign: 'center', background: '#F3F3F6', borderRadius: 20, color: '#727785', fontWeight: 600, fontSize: 15 }}>
