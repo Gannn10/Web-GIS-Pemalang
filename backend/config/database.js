@@ -1,16 +1,19 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// Cek apakah aplikasi sedang berjalan di server publik (Production) atau di laptop lokal (Development)
 const isProduction = process.env.NODE_ENV === 'production' || (process.env.DB_HOST && process.env.DB_HOST !== 'localhost');
 
+// Konfigurasi dasar untuk koneksi ke database PostgreSQL
 const poolConfig = {
     user: process.env.DB_USER || 'postgres',
     host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'pemalang_gis', // Sesuaikan dengan nama databasemu
-    password: process.env.DB_PASSWORD || 'pemalang', // Sesuaikan dengan password databasemu
+    database: process.env.DB_NAME || 'pemalang_gis', 
+    password: process.env.DB_PASSWORD || 'pemalang', 
     port: process.env.DB_PORT || 5432,
 };
 
+// Jika berada di server publik (misal: Supabase/Render), aktifkan SSL agar koneksi aman
 if (isProduction) {
     poolConfig.ssl = {
         require: true,
@@ -18,6 +21,8 @@ if (isProduction) {
     };
 }
 
+// Inisialisasi Kolam Koneksi (Pool). 
+// Jika ada DATABASE_URL dari .env (biasanya saat hosting), gunakan itu. Jika tidak, pakai konfigurasi lokal.
 const pool = process.env.DATABASE_URL
     ? new Pool({
         connectionString: process.env.DATABASE_URL,
@@ -28,21 +33,17 @@ const pool = process.env.DATABASE_URL
       })
     : new Pool(poolConfig);
 
-// Event listener (opsional, untuk debug saat ada klien baru terkoneksi)
-pool.on('connect', () => {
-    // console.log('Sebuah client baru terhubung ke pool');
-});
-
-// Event listener error (penting agar server tidak crash jika database putus)
+// Event Listener: Dipicu ketika ada masalah dengan koneksi database secara tiba-tiba
 pool.on('error', (err) => {
-    console.error('❌ Unexpected error on idle client', err);
-    process.exit(-1);
+    console.error('❌ Terjadi kesalahan tak terduga pada koneksi database:', err);
+    process.exit(-1); // Matikan proses agar PM2/Server me-restart aplikasi secara otomatis
 });
 
-// 🔥 TEST KONEKSI LANGSUNG SAAT SERVER NYALA 🔥
+// 🔥 TEST KONEKSI AWAL 🔥
+// Saat server pertama kali dinyalakan, coba kirim perintah sederhana (SELECT NOW())
 pool.query('SELECT NOW()', (err, res) => {
     if (err) {
-        console.error('❌ Gagal terhubung ke Database:', err.message);
+        console.error('❌ Gagal terhubung ke Database PostgreSQL:', err.message);
     } else {
         console.log('✅ Berhasil terhubung ke PostgreSQL!');
     }

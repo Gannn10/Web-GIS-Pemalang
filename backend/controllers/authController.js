@@ -2,39 +2,46 @@ const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// LOGIN ADMIN
+/**
+ * ============================================================================
+ * FUNGSI: login
+ * ============================================================================
+ * Menangani proses otentikasi admin. Mengecek kecocokan username dan password, 
+ * lalu memberikan token JWT jika valid.
+ */
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // 1. Cek apakah user ada di database
+        // 1. Validasi: Cari data admin berdasarkan username di database
         const query = `SELECT * FROM users WHERE username = $1`;
         const result = await pool.query(query, [username]);
 
+        // Jika username tidak ada di tabel users
         if (result.rows.length === 0) {
-            return res.status(401).json({ success: false, message: 'Username tidak ditemukan' });
+            return res.status(401).json({ success: false, message: 'Username tidak ditemukan.' });
         }
 
         const user = result.rows[0];
 
-        // 2. Cek apakah password cocok (Decoding Hash)
-        // Password default di database schema Anda: 'admin123'
+        // 2. Keamanan: Bandingkan password input dengan password hash di database
         const isMatch = await bcrypt.compare(password, user.password_hash);
 
+        // Jika password salah
         if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'Password salah' });
+            return res.status(401).json({ success: false, message: 'Password salah.' });
         }
 
-        // 3. Buat Token JWT (Tiket Masuk)
+        // 3. Otorisasi: Buat Token JWT sebagai 'Kunci Akses' untuk frontend
         const token = jwt.sign(
             { id: user.user_id, role: user.role },
-            process.env.JWT_SECRET || 'rahasia_skripsi_super_aman', // Pastikan ini ada di .env
-            { expiresIn: '1d' } // Token berlaku 1 hari
+            process.env.JWT_SECRET || 'rahasia_skripsi_super_aman', 
+            { expiresIn: '1d' } // Masa berlaku token: 1 hari
         );
 
         res.json({
             success: true,
-            message: 'Login berhasil',
+            message: 'Login berhasil.',
             token: token,
             user: {
                 id: user.user_id,
@@ -44,15 +51,21 @@ exports.login = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Login Error:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        console.error('Terjadi kesalahan saat Login:', error);
+        res.status(500).json({ success: false, message: 'Terjadi masalah pada server.' });
     }
 };
 
-// CEK STATUS LOGIN (Untuk Auto-login di Frontend nanti)
+/**
+ * ============================================================================
+ * FUNGSI: getMe
+ * ============================================================================
+ * Mengecek status sesi login. Biasanya dipanggil otomatis oleh Frontend saat 
+ * halaman dimuat ulang (refresh) untuk memastikan admin masih login.
+ */
 exports.getMe = async (req, res) => {
     try {
-        // req.user didapat dari middleware (nanti kita buat)
+        // req.user didapat dari middleware otentikasi (auth.js)
         const query = `SELECT user_id, username, full_name, role FROM users WHERE user_id = $1`;
         const result = await pool.query(query, [req.user.id]);
         
@@ -61,6 +74,6 @@ exports.getMe = async (req, res) => {
             user: result.rows[0]
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Server Error' });
+        res.status(500).json({ success: false, message: 'Terjadi masalah pada server saat memuat data user.' });
     }
 };

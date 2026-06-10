@@ -114,18 +114,4 @@ export const authService = {
     }
 };
 
-/**
- * =========================================
- * HAVERSINE SERVICES (MANUAL CALCULATION)
- * =========================================
- * Hanya dipakai jika Anda ingin membandingkan PostGIS vs Manual di Skripsi
- */
-export const haversineService = {
-    // Ambil rekomendasi pakai rumus manual JS
-    getRecommendations: (lat, lon) => 
-        api.get('/haversine', { 
-            params: { lat, lon } 
-        }),
-};
-
 export default api;
