@@ -7,7 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import Swal from 'sweetalert2';
 import { Search, MapPin, Navigation, Info, Menu, X, Home, Layers,
-    ChevronRight, Users, Map as MapIcon, Compass,
+    ChevronRight, Users, Map as MapIcon, Compass, ArrowRight,
     Palmtree, Mountain, Landmark, Building2, Globe,
     CircleDot, Waves, SlidersHorizontal, User, LayoutGrid, BarChart2
 } from 'lucide-react';
@@ -166,11 +166,11 @@ const createCustomIcon = (kategori, isActive = false, isDimmed = false) => {
 
     const scale = isActive ? 'scale(1.25)' : (isDimmed ? 'scale(0.85)' : 'scale(1)');
     const opacity = isDimmed ? '0.55' : '1';
-
+    
     return L.divIcon({
-        className: `custom-marker marker-drop-anim ${isActive ? 'marker-active' : ''}`,
+        className: `custom-marker !bg-transparent !border-none`,
         html: `
-            <div style="position: relative; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; opacity: ${opacity}; transform: ${scale}; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: ${isActive ? '9999' : '100'};">
+            <div class="${isActive ? 'marker-active' : ''}" style="position: relative; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; opacity: ${opacity}; transform: ${scale}; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: ${isActive ? '9999' : '100'};">
                 <!-- Glowing Outer Ring (Active State) -->
                 ${isActive ? `<div style="position: absolute; width: 44px; height: 44px; border-radius: 50%; border: 3px solid ${color}; opacity: 0.4; animation: gps-glow 1.5s infinite;"></div>` : ''}
                 
@@ -296,8 +296,8 @@ const MapFlyer = ({ userLoc, selectedWisata }) => {
 
             // Geser sedikit ke bawah (target latitude dikurangi sedikit) 
             // agar marker muncul di area atas layar
-            const offset = 0.010;
-            map.flyTo([targetLat - offset, targetLon], 12, {
+            const offset = 0.012; 
+            map.flyTo([targetLat - offset, targetLon], 12.5, {
                 animate: true,
                 duration: 2.0
             });
@@ -379,6 +379,7 @@ const MapPage = () => {
     const [filteredWisata, setFilteredWisata] = useState([]);
     const [kategori, setKategori] = useState('');
     const [search, setSearch] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [searchParams] = useSearchParams();
 
@@ -413,6 +414,13 @@ const MapPage = () => {
     const [isListExpanded, setIsListExpanded] = useState(true);
     const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
     const [isMobileLegendOpen, setIsMobileLegendOpen] = useState(false);
+
+    const suggestions = useMemo(() => {
+        if (!search) return [];
+        return wisataList
+            .filter(w => w.nama_wisata?.toLowerCase().includes(search.toLowerCase()))
+            .slice(0, 6);
+    }, [search, wisataList]);
 
     // Sidebar section states
     const [sectionOpen, setSectionOpen] = useState({
@@ -467,8 +475,8 @@ const MapPage = () => {
         if (kategori) result = result.filter(w => w.nama_kategori === kategori);
         if (search) result = result.filter(w => w.nama_wisata?.toLowerCase().includes(search.toLowerCase()));
 
-        // Simpan hasil filter dasar untuk ditampilkan semua di PETA
-        setMapWisata(result);
+        // Peta selalu menampilkan semua wisata (dimming logic ditangani di render Peta)
+        setMapWisata(wisataList);
 
         // Filter Lanjutan (Radius) - Hanya berlaku untuk DAFTAR SIDEBAR
         if (userLoc) {
@@ -604,25 +612,31 @@ const MapPage = () => {
                 .custom-user-popup .leaflet-popup-content {
                     width: 170px !important;
                 }
+                .custom-marker {
+                    -webkit-tap-highlight-color: transparent !important;
+                    outline: none !important;
+                }
+                .custom-marker:focus, .custom-marker:active {
+                    outline: none !important;
+                }
+
 
                 
                 @keyframes marker-pulse {
-                    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
-                    70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(37, 99, 235, 0); }
-                    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.15); }
+                    100% { transform: scale(1); }
                 }
                 .marker-active {
                     animation: marker-pulse 2s infinite;
                     z-index: 9999 !important;
                 }
-                
-                @keyframes marker-drop {
-                    0% { transform: translateY(-100px); opacity: 0; }
-                    60% { transform: translateY(10px); opacity: 1; }
-                    100% { transform: translateY(0); opacity: 1; }
+                @keyframes marker-fade-in {
+                    0% { transform: scale(0.9) translateY(4px); opacity: 0; }
+                    100% { transform: scale(1) translateY(0); opacity: 1; }
                 }
-                .marker-drop-anim {
-                    animation: marker-drop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+                .marker-fade-in-anim {
+                    animation: marker-fade-in 0.25s ease-out backwards;
                 }
 
                 /* GPS Blue Dot Styles */
@@ -955,7 +969,7 @@ const MapPage = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 relative z-10">
-                                    <span className="text-[10px] font-bold text-[#16A34A] bg-[#DCFCE7] px-2 py-0.5 rounded-full">{filteredWisata.length}</span>
+                                    <span className="text-[10px] font-bold text-[#16A34A] bg-[#DCFCE7] px-2 py-0.5 rounded-full">{wisataList.length}</span>
                                     <ChevronRight
                                         size={16}
                                         strokeWidth={2.5}
@@ -1127,25 +1141,110 @@ const MapPage = () => {
                             )}
  
                             {/* Search Input */}
-                            <div className="flex-1 bg-white/80 backdrop-blur-md rounded-full shadow-[0_12px_30px_rgba(0,0,0,0.06)] border border-white/40 flex items-center px-5 h-[46px] md:h-[48px] md:rounded-full md:px-5">
-                                <Search size={20} className="text-gray-400 shrink-0" />
-                                <input
-                                    type="text"
-                                    placeholder="Cari destinasi, lokasi..."
-                                    className="w-full bg-transparent text-xs md:text-sm font-semibold text-gray-700 focus:outline-none placeholder-gray-400 px-3"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                />
-                                {search && (
-                                    <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-600 transition shrink-0 ml-1">
-                                        <X size={16} strokeWidth={3} />
-                                    </button>
-                                )}
+                            <div className="relative flex-1">
+                                <div className={`bg-white/80 backdrop-blur-md shadow-[0_12px_30px_rgba(0,0,0,0.06)] border border-white/40 flex items-center px-5 h-[46px] md:h-[48px] ${showSuggestions && search && suggestions.length > 0 ? 'rounded-t-[24px] border-b-0' : 'rounded-full'}`}>
+                                    <Search size={20} className="text-gray-400 shrink-0" />
+                                    <input
+                                        type="text"
+                                        placeholder="Cari destinasi, lokasi..."
+                                        className="w-full bg-transparent text-xs md:text-sm font-semibold text-gray-700 focus:outline-none placeholder-gray-400 px-3"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onFocus={() => {
+                                            setShowSuggestions(true);
+                                            setSelectedWisata(null); // Tutup detail card saat mulai mencari
+                                        }}
+                                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                    />
+                                    {search && (
+                                        <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-600 transition shrink-0 ml-1">
+                                            <X size={16} strokeWidth={3} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Dropdown Suggestions */}
+                                <AnimatePresence>
+                                    {showSuggestions && search && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10, scaleY: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+                                            exit={{ opacity: 0, y: -10, scaleY: 0.95 }}
+                                            transition={{ duration: 0.2, ease: "easeOut" }}
+                                            style={{ transformOrigin: "top" }}
+                                            className="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl shadow-[0_24px_48px_rgba(0,0,0,0.12)] border border-white/60 border-t-0 rounded-b-[24px] overflow-hidden z-50 pb-2"
+                                        >
+                                            {suggestions.length > 0 ? (
+                                                <>
+                                                    {/* Divider / Header */}
+                                                    <div className="px-5 pt-3 pb-2 flex items-center justify-between">
+                                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Saran Pencarian</span>
+                                                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full">{suggestions.length} hasil</span>
+                                                    </div>
+                                                    <div className="h-[1px] bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-5 mb-2"></div>
+
+                                                    <div className="max-h-[40vh] overflow-y-auto custom-scrollbar px-2 space-y-1">
+                                                        {suggestions.map((item, index) => {
+                                                            const Icon = item.nama_kategori === 'Wisata Bahari' ? Waves :
+                                                                         item.nama_kategori === 'Wisata Alam' ? TreesIcon :
+                                                                         item.nama_kategori === 'Wisata Religi' ? MosqueIcon :
+                                                                         item.nama_kategori === 'Wisata Buatan' ? MonumentIcon : MapPin;
+                                                            const badge = getBadgeStyle(item.nama_kategori);
+                                                            return (
+                                                                <React.Fragment key={item.wisata_id}>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setSearch(item.nama_wisata);
+                                                                            setSelectedWisata(item);
+                                                                            setShowSuggestions(false);
+                                                                            if (window.innerWidth < 768) setIsSidebarOpen(false);
+                                                                        }}
+                                                                        className="w-full flex items-center gap-3.5 p-3 rounded-[18px] hover:bg-gray-50 active:bg-blue-50/50 transition-all text-left group"
+                                                                    >
+                                                                        <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0 shadow-sm border border-white/50 group-hover:scale-105 group-hover:shadow-md transition-all duration-300 ${badge.bg || 'bg-blue-50 text-blue-500'}`}>
+                                                                            <Icon size={20} strokeWidth={2.5} />
+                                                                        </div>
+                                                                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                                            <p className="text-[14px] font-semibold text-gray-800 truncate leading-tight mb-1 group-hover:text-blue-600 transition-colors">{item.nama_wisata}</p>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className={`inline-flex items-center text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-white/50 ${badge.bg}`}>
+                                                                                    {item.nama_kategori || 'Destinasi'}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 text-gray-300 group-hover:bg-blue-500 group-hover:border-blue-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                                                                            <ArrowRight size={14} strokeWidth={2.5} />
+                                                                        </div>
+                                                                    </button>
+                                                                    
+                                                                    {/* Pembatas Tipis (kecuali item terakhir) */}
+                                                                    {index < suggestions.length - 1 && (
+                                                                        <div className="h-[1px] bg-gray-200 mx-5 my-1"></div>
+                                                                    )}
+                                                                </React.Fragment>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="px-5 py-8 flex flex-col items-center justify-center text-center">
+                                                    <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3">
+                                                        <Search size={24} className="text-gray-300" />
+                                                    </div>
+                                                    <p className="text-sm font-bold text-gray-600 mb-1">Destinasi tidak ditemukan</p>
+                                                    <p className="text-[11px] text-gray-400">Coba gunakan kata kunci lain untuk mencari.</p>
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
  
-                        {/* Category Pills Slider */}
-                        <div className="flex gap-2.5 overflow-x-auto pb-3 px-4 md:px-0 no-scrollbar scroll-smooth w-full md:w-[580px]">
+                        {/* Category Pills Slider - Disembunyikan saat kotak pencarian aktif */}
+                        <div className={`flex gap-2.5 overflow-x-auto px-4 md:px-0 no-scrollbar scroll-smooth w-full md:w-[580px] transition-all duration-300 origin-top ${
+                            showSuggestions && search ? 'opacity-0 max-h-0 pb-0 scale-y-95 pointer-events-none' : 'opacity-100 max-h-[100px] pb-3 scale-y-100'
+                        }`}>
                             {KATEGORI_LIST.map((kat) => {
                                 const isActive = kategori === kat.value;
                                 return (
@@ -1352,13 +1451,22 @@ const MapPage = () => {
                                 ? calculateHaversine(userLoc[0], userLoc[1], parseFloat(item.latitude), parseFloat(item.longitude)) <= radius
                                 : true;
 
+                            // Cek apakah sesuai dengan filter pencarian dan kategori
+                            const matchesSearch = search ? item.nama_wisata?.toLowerCase().includes(search.toLowerCase()) : true;
+                            const matchesKategori = kategori ? item.nama_kategori === kategori : true;
+                            const isMatchingFilter = matchesSearch && matchesKategori;
+
+                            // Jika ada filter aktif (search atau kategori), redupkan yang tidak match. 
+                            // Jika userLoc aktif, redupkan yang di luar radius.
+                            const isDimmed = !isInside || !isMatchingFilter;
+
                             const isActive = selectedWisata?.wisata_id === item.wisata_id;
 
                             return (
                                 <Marker
                                     key={item.wisata_id}
                                     position={[parseFloat(item.latitude), parseFloat(item.longitude)]}
-                                    icon={createCustomIcon(item.nama_kategori, isActive, !isInside)}
+                                    icon={createCustomIcon(item.nama_kategori, isActive, isDimmed)}
                                     eventHandlers={{ 
                                         click: () => {
                                             if (!isSelectingLoc) {

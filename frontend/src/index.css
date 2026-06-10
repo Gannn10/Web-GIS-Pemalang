@@ -17,3 +17,12 @@ html, body, #root {
     width: 100%;
     z-index: 0;
 }
+
+/* Hilangkan SEMUA kotak biru/bayangan klik pada peta Leaflet */
+.leaflet-container * {
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+}
+.leaflet-interactive:focus {
+    outline: none !important;
+}

@@ -36,6 +36,7 @@ const Home = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [popularWisata, setPopularWisata] = useState([]);
     const [activeNav, setActiveNav] = useState('beranda');
+    const [isVideoLoaded, setIsVideoLoaded] = useState(false);
     const revealRefs = useRef([]);
 
     /* ─── Fetch Wisata Populer ─── */
@@ -597,10 +598,19 @@ const Home = () => {
                 overflow: 'hidden',
                 background: '#0A0F1E',
             }}>
-                {/* Background video */}
+                {/* Background video dengan efek fade-in */}
                 <video
                     autoPlay loop muted playsInline
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.75 }}
+                    onCanPlay={() => setIsVideoLoaded(true)}
+                    style={{ 
+                        position: 'absolute', 
+                        inset: 0, 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover', 
+                        opacity: isVideoLoaded ? 0.75 : 0,
+                        transition: 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
+                    }}
                 >
                     <source src="/bg-pemalang.mp4" type="video/mp4" />
                 </video>
