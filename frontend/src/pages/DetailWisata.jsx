@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import {
     ChevronLeft, Share2, Heart, MapPin, Ticket, Clock,
@@ -120,8 +120,12 @@ const getFacilityStyle = (name) => {
     };
 };
 
-const DetailWisata = () => {
+const DetailWisata = ({ legacyRedirect }) => {
     const { id } = useParams();
+    if (legacyRedirect) {
+        return <Navigate to={`/explore/wisata/${id}`} replace />;
+    }
+
     const navigate = useNavigate();
     const [wisata, setWisata] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -196,7 +200,7 @@ const DetailWisata = () => {
     }, [id]);
 
     if (loading) return (
-        <div style={{ minHeight: '100vh', background: '#F9F9FC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 5000, minHeight: '100vh', background: '#F9F9FC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 48, height: 48, border: '3px solid #DBEAFE', borderTopColor: '#004DA4', borderRadius: '50%', animation: 'dw-spin 0.8s linear infinite' }} />
                 <p style={{ color: '#727785', fontWeight: 600, fontSize: 14 }}>Menyiapkan Pengalaman...</p>
@@ -206,14 +210,14 @@ const DetailWisata = () => {
     );
 
     if (!wisata) return (
-        <div style={{ minHeight: '100vh', background: '#F9F9FC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 5000, minHeight: '100vh', background: '#F9F9FC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <div style={{ textAlign: 'center' }}>
                 <div style={{ width: 80, height: 80, background: '#FEE2E2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#EF4444' }}>
                     <Info size={40} />
                 </div>
                 <h2 style={{ fontWeight: 800, fontSize: 20, color: '#1A1C1E', marginBottom: 8 }}>Wisata Tidak Ditemukan</h2>
-                <button onClick={() => navigate('/explore')} style={{ color: '#004DA4', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
-                    Kembali ke Peta →
+                <button onClick={() => navigate(-1)} style={{ color: '#004DA4', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
+                    Kembali →
                 </button>
             </div>
         </div>
@@ -232,7 +236,7 @@ const DetailWisata = () => {
     const isGratis = !wisata.harga_tiket || parseInt(wisata.harga_tiket) === 0;
 
     return (
-        <div style={{ minHeight: '100vh', background: '#F9F9FC', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1A1C1E', overflowX: 'hidden' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 5000, minHeight: '100dvh', background: '#F9F9FC', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", color: '#1A1C1E', overflowX: 'hidden', overflowY: 'auto' }}>
             <style>{`
                 @keyframes dw-kenburns { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
                 @keyframes dw-spin { to { transform: rotate(360deg); } }

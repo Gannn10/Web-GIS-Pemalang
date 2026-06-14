@@ -54,8 +54,12 @@ function App() {
           <Routes>
             {/* --- RUTE PUBLIK (Bisa diakses siapa saja) --- */}
             <Route path="/" element={<Home />} />
-            <Route path="/explore" element={<MapPage />} />
-            <Route path="/wisata/:id" element={<DetailWisata />} />
+            <Route path="/explore" element={<MapPage />}>
+              <Route path="wisata/:id" element={<DetailWisata />} />
+            </Route>
+            
+            {/* Redirect legacy links */}
+            <Route path="/wisata/:id" element={<DetailWisata legacyRedirect={true} />} />
 
             {/* --- RUTE ADMIN (Khusus Pengelola) --- */}
             <Route path="/admin/login" element={<Login />} />

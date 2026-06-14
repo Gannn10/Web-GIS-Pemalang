@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link, Outlet } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, Circle, useMapEvents, Polyline, useMap, ZoomControl } from 'react-leaflet';
 import axios from 'axios';
 import { fetchWithCache } from '../services/apiCache';
@@ -277,7 +277,13 @@ const MapCenterTracker = ({ isSelectingLoc, onCenterChange }) => {
 const MapEvents = ({ isSelectingLoc, onLocationSelected, onMapClick }) => {
     useMapEvents({
         click(e) {
-            if (!isSelectingLoc) {
+            if (isSelectingLoc) {
+                // Saat mode pilih manual, klik di mana saja akan menggeser peta ke titik tersebut
+                e.target.flyTo(e.latlng, e.target.getZoom(), {
+                    animate: true,
+                    duration: 0.5
+                });
+            } else {
                 onMapClick();
             }
         }
@@ -488,7 +494,7 @@ const MapPage = () => {
                 const wisataId = searchParams.get('wisata');
                 if (wisataId) {
                     const target = data.find(w => w.wisata_id == wisataId);
-                    if (target) setSearch(target.nama_wisata);
+                    if (target) setSelectedWisata(target);
                 }
             } catch (error) { console.error('Gagal mengambil data:', error); }
         };
@@ -1223,7 +1229,6 @@ const MapPage = () => {
                                                                 <React.Fragment key={item.wisata_id}>
                                                                     <button
                                                                         onClick={() => {
-                                                                            setSearch(item.nama_wisata);
                                                                             setSelectedWisata(item);
                                                                             setShowSuggestions(false);
                                                                             if (window.innerWidth < 768) setIsSidebarOpen(false);
@@ -1547,7 +1552,7 @@ const MapPage = () => {
                                         </div>
 
                                         <div className="flex gap-2 mt-1.5 md:mt-2">
-                                            <Link to={`/wisata/${selectedWisata.wisata_id}`} className="flex-[1.5] py-2 md:py-3 bg-blue-500 text-white text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-xl md:rounded-2xl text-center shadow-lg shadow-blue-100 hover:bg-blue-600 transition active:scale-95 flex items-center justify-center">Lihat Detail</Link>
+                                            <Link to={`wisata/${selectedWisata.wisata_id}`} className="flex-[1.5] py-2 md:py-3 bg-blue-500 text-white text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-xl md:rounded-2xl text-center shadow-lg shadow-blue-100 hover:bg-blue-600 transition active:scale-95 flex items-center justify-center">Lihat Detail</Link>
                                             <button
                                                 onClick={() => getRoute(selectedWisata.latitude, selectedWisata.longitude, selectedWisata.nama_wisata, selectedWisata)}
                                                 className="flex-1 py-2 md:py-3 bg-gray-50 text-gray-700 text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-xl md:rounded-2xl hover:bg-gray-100 transition flex items-center justify-center gap-1.5 active:scale-95"
@@ -1787,6 +1792,7 @@ const MapPage = () => {
                 )}
 
             </div>
+            <Outlet />
         </div>
     );
 };
