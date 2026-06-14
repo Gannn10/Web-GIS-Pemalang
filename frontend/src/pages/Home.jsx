@@ -37,6 +37,14 @@ const Home = () => {
     const [popularWisata, setPopularWisata] = useState([]);
     const [activeNav, setActiveNav] = useState('beranda');
     const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+    const [videoSrc, setVideoSrc] = useState('/bg-pemalang.mp4');
+
+    useEffect(() => {
+        if (window.innerWidth <= 768) {
+            setVideoSrc('/bg-pemalang-mobile.mp4');
+        }
+    }, []);
+
     const revealRefs = useRef([]);
 
     /* ─── Fetch Wisata Populer ─── */
@@ -600,20 +608,20 @@ const Home = () => {
             }}>
                 {/* Background video dengan efek fade-in */}
                 <video
-                    autoPlay loop muted playsInline
+                    key={videoSrc}
+                    autoPlay loop muted playsInline disablePictureInPicture preload="auto"
                     onCanPlay={() => setIsVideoLoaded(true)}
                     style={{ 
                         position: 'absolute', 
                         inset: 0, 
                         width: '100%', 
                         height: '100%', 
-                        objectFit: 'cover', 
-                        transform: 'scale(1.35)',
+                        objectFit: 'cover',
                         opacity: isVideoLoaded ? 1 : 0,
                         transition: 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
                     }}
                 >
-                    <source src="/bg-pemalang.mp4" type="video/mp4" />
+                    <source src={videoSrc} type="video/mp4" />
                 </video>
 
                 {/* Gradient overlay — dark only, no white fade */}
