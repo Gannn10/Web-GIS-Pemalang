@@ -4,11 +4,10 @@
 
 /* CSS Tambahan agar peta full screen & tidak ada scrollbar aneh */
 html, body, #root {
-    height: 100%;
+    min-height: 100dvh;
     width: 100%;
     margin: 0;
     padding: 0;
-    
 }
 
 /* Pastikan container peta Leaflet mengisi ruang yang tersedia */

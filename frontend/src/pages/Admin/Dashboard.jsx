@@ -186,7 +186,7 @@ const Dashboard = () => {
     const totalAlam = wisataList.filter(w => w.kategori_id === 2).length;
 
     return (
-        <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+        <div className="flex h-[100dvh] bg-slate-50 overflow-hidden font-sans">
             
             {/* ─── SIDEBAR ─── */}
             <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 border-r border-slate-800 hidden md:flex">

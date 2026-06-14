@@ -56,28 +56,95 @@ exports.getAllWisata = async (req, res) => {
     }
 };
 /**
- * 2. GET Wisata Terdekat
+ * Fungsi Pembantu: Konversi Derajat ke Radian (Untuk Algoritma Haversine)
+ */
+const toRad = (value) => {
+    return (value * Math.PI) / 180;
+};
+
+/**
+ * ============================================================================
+ * LOGIKA MATEMATIKA ALGORITMA HAVERSINE MURNI
+ * ============================================================================
+ * PENJELASAN UNTUK SIDANG SKRIPSI:
+ * Algoritma Haversine digunakan untuk menghitung jarak garis lurus (Great-Circle Distance)
+ * antara dua titik di permukaan bumi yang melengkung/bulat, menggunakan garis lintang 
+ * (latitude) dan garis bujur (longitude).
+ */
+const hitungJarakHaversine = (lat1, lon1, lat2, lon2) => {
+    // 1. R = Konstanta Radius (Jari-jari) rata-rata Bumi dalam kilometer
+    const R = 6371; 
+    
+    // 2. Menghitung selisih lintang (ΔLat) dan bujur (ΔLon) lalu dikonversi ke format Radian
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    
+    // 3. Rumus "a" (Kuadrat setengah jarak tali busur / kuadrat jarak antar titik)
+    //    Inti rumus Haversine: a = sin²(Δlat/2) + cos(lat1) * cos(lat2) * sin²(Δlon/2)
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+              
+    // 4. Rumus "c" (Jarak sudut / angular distance dalam radian)
+    //    Menggunakan fungsi arc-tangent (atan2) yang stabil untuk presisi jarak dekat maupun jauh
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
+    // 5. Rumus Akhir: Mengalikan radius bumi (R) dengan jarak sudut (c)
+    const jarak = R * c; // Output akhir berupa jarak garis lurus (geodesik) dalam satuan Kilometer
+    
+    return jarak;
+};
+
+/**
+ * 2. GET Wisata Terdekat (Menggunakan Algoritma Haversine di Controller)
  */
 exports.getWisataTerdekat = async (req, res) => {
     try {
         const { lat, lon, radius } = req.query;
         if (!lat || !lon) return res.status(400).json({ success: false, message: 'Lat & Lon wajib diisi' });
 
-        const searchRadius = radius || 5000; 
+        const userLat = parseFloat(lat);
+        const userLon = parseFloat(lon);
+        // Konversi radius pencarian ke dalam satuan Kilometer
+        const searchRadiusKm = (radius || 5000) / 1000; 
+
+        // 1. Ambil seluruh titik destinasi dari basis data
         const query = `
             SELECT 
                 wisata_id, nama_wisata, kategori_id, alamat, foto_utama, foto_2, foto_3,
-                ST_X(lokasi::geometry) as longitude, ST_Y(lokasi::geometry) as latitude,
-                ST_DistanceSphere(lokasi, ST_SetSRID(ST_MakePoint($1, $2), 4326)) as jarak_meter
+                ST_X(lokasi::geometry) as longitude, ST_Y(lokasi::geometry) as latitude
             FROM wisata
-            WHERE ST_DWithin(lokasi, ST_SetSRID(ST_MakePoint($1, $2), 4326), $3 / 111319.9)
-            ORDER BY jarak_meter ASC LIMIT 10;
         `;
+        const result = await pool.query(query);
 
-        const result = await pool.query(query, [parseFloat(lon), parseFloat(lat), parseFloat(searchRadius)]);
-        const formattedRows = result.rows.map(row => formatWisataImages(row, req));
-        res.status(200).json({ success: true, data: formattedRows });
-    } catch (error) { res.status(500).json({ success: false, message: 'Server Error' }); }
+        // 2. Eksekusi Logika Algoritma Haversine
+        let wisataTerdekat = result.rows.map(row => {
+            const destLat = parseFloat(row.latitude);
+            const destLon = parseFloat(row.longitude);
+            
+            // Memanggil fungsi Haversine
+            const jarak_km = hitungJarakHaversine(userLat, userLon, destLat, destLon);
+            
+            return {
+                ...row,
+                jarak_km: parseFloat(jarak_km.toFixed(3)),
+                jarak_meter: Math.round(jarak_km * 1000)
+            };
+        });
+
+        // 3. Filter Radius & Urutkan secara Ascending (Dari terdekat ke terjauh)
+        wisataTerdekat = wisataTerdekat
+            .filter(w => w.jarak_km <= searchRadiusKm)
+            .sort((a, b) => a.jarak_km - b.jarak_km);
+
+        // 4. Batasi 10 destinasi teratas & format response
+        const finalData = wisataTerdekat.slice(0, 10).map(row => formatWisataImages(row, req));
+        
+        res.status(200).json({ success: true, data: finalData });
+    } catch (error) { 
+        console.error("Error Haversine:", error);
+        res.status(500).json({ success: false, message: 'Server Error' }); 
+    }
 };
 
 /**

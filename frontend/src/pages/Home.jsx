@@ -99,23 +99,23 @@ const Home = () => {
 
     const techFeatures = [
         {
-            icon: <Zap size={22} />,
-            title: 'Real-time Update',
-            desc: 'Sistem sinkronisasi data instan memastikan informasi geografis selalu diperbarui dalam hitungan detik.',
+            icon: <MapPin size={22} />,
+            title: 'Pencarian Terdekat',
+            desc: 'Mendeteksi dan menampilkan rekomendasi wisata terdekat secara otomatis berdasarkan posisi GPS Anda saat ini.',
             color: '#EEF2FF',
             iconColor: '#004DA4',
         },
         {
             icon: <ShieldCheck size={22} />,
-            title: 'Akurasi Tinggi',
-            desc: 'Algoritma Haversine tingkat lanjut memberikan hasil kalkulasi jarak yang presisi secara matematis.',
+            title: 'Akurasi Jarak',
+            desc: 'Menggunakan metode perhitungan Haversine untuk memberikan estimasi jarak dari titik awal ke destinasi wisata dengan akurat.',
             color: '#F0FDF9',
             iconColor: '#006B5B',
         },
         {
             icon: <Navigation size={22} />,
-            title: 'Optimasi Rute',
-            desc: 'Fitur navigasi pintar yang merekomendasikan rute paling efisien untuk menjangkau setiap destinasi.',
+            title: 'Panduan Perjalanan',
+            desc: 'Menampilkan gambaran jalur rute di peta dan terhubung langsung dengan aplikasi Google Maps untuk kemudahan berkendara.',
             color: '#F8F8F8',
             iconColor: '#424753',
         },
@@ -608,7 +608,8 @@ const Home = () => {
                         width: '100%', 
                         height: '100%', 
                         objectFit: 'cover', 
-                        opacity: isVideoLoaded ? 0.75 : 0,
+                        transform: 'scale(1.35)',
+                        opacity: isVideoLoaded ? 1 : 0,
                         transition: 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
                     }}
                 >

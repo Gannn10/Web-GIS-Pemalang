@@ -36,7 +36,7 @@ const ProtectedRoute = ({ children }) => {
  * Tampilan yang muncul sementara saat halaman Lazy Load sedang dalam proses download.
  */
 const PageLoader = () => (
-  <div className="flex h-screen w-full items-center justify-center bg-gray-50">
+  <div className="flex h-[100dvh] w-full items-center justify-center bg-gray-50">
     <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
   </div>
 );

@@ -30,7 +30,7 @@ const Login = () => {
 
     return (
         <div 
-            className="min-h-screen flex items-center justify-center relative overflow-hidden font-sans"
+            className="min-h-[100dvh] flex items-center justify-center relative overflow-hidden font-sans"
             style={{
                 backgroundImage: `url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=80')`,
                 backgroundSize: 'cover',

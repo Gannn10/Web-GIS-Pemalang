@@ -316,6 +316,19 @@ const MapFlyer = ({ userLoc, selectedWisata }) => {
     return null;
 };
 
+const MapResetTrigger = ({ trigger }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (trigger > 0) {
+            map.flyTo([-7.0125, 109.3772], 11, {
+                animate: true,
+                duration: 2.0
+            });
+        }
+    }, [trigger, map]);
+    return null;
+};
+
 const ZoomLocateControls = ({ onLocate, onSelectManual, isSelectingLoc, userLoc }) => {
     const map = useMap();
 
@@ -331,7 +344,7 @@ const ZoomLocateControls = ({ onLocate, onSelectManual, isSelectingLoc, userLoc 
     };
 
     return (
-        <div className="absolute top-auto bottom-[240px] right-2 md:bottom-6 md:right-[196px] z-[1000] flex flex-col bg-white/95 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-white overflow-hidden w-9 md:w-12 transition-all duration-300">
+        <div className="absolute top-auto bottom-[260px] right-2 md:bottom-6 md:right-[196px] z-[1000] flex flex-col bg-white/95 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-white overflow-hidden w-9 md:w-12 transition-all duration-300">
             {/* Manual Pin Select Button */}
             <button
                 onClick={onSelectManual}
@@ -407,6 +420,7 @@ const MapPage = () => {
     const [mapCenter, setMapCenter] = useState(null);
     const [routePath, setRoutePath] = useState(null);
     const [activeRouteName, setActiveRouteName] = useState('');
+    const [activeRouteDest, setActiveRouteDest] = useState(null);
     const [routeInfo, setRouteInfo] = useState(null);
     const [selectedWisata, setSelectedWisata] = useState(null);
     const [mapType, setMapType] = useState('streets');
@@ -414,6 +428,8 @@ const MapPage = () => {
     const [isListExpanded, setIsListExpanded] = useState(true);
     const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
     const [isMobileLegendOpen, setIsMobileLegendOpen] = useState(false);
+    const [isLocationMenuOpen, setIsLocationMenuOpen] = useState(false);
+    const [resetTrigger, setResetTrigger] = useState(0);
 
     const suggestions = useMemo(() => {
         if (!search) return [];
@@ -446,6 +462,20 @@ const MapPage = () => {
 
     useEffect(() => { if (userLoc) localStorage.setItem('userLoc_skripsi', JSON.stringify(userLoc)); else localStorage.removeItem('userLoc_skripsi'); }, [userLoc]);
     useEffect(() => { localStorage.setItem('userRad_skripsi', radius.toString()); }, [radius]);
+
+    // Hapus destinasi yang terpilih jika user masuk ke mode pemilihan lokasi manual
+    useEffect(() => {
+        if (isSelectingLoc) {
+            setSelectedWisata(null);
+        }
+    }, [isSelectingLoc]);
+
+    // Tutup menu Titik Awal jika pengguna memilih destinasi
+    useEffect(() => {
+        if (selectedWisata) {
+            setIsLocationMenuOpen(false);
+        }
+    }, [selectedWisata]);
 
     useEffect(() => {
         const fetchWisata = async () => {
@@ -495,7 +525,12 @@ const MapPage = () => {
     const getLocationGPS = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (pos) => { setUserLoc([pos.coords.latitude, pos.coords.longitude]); setIsSelectingLoc(false); resetRoute(); },
+                (pos) => { 
+                    setUserLoc([pos.coords.latitude, pos.coords.longitude]); 
+                    setIsSelectingLoc(false); 
+                    resetRoute(); 
+                    setIsLocationMenuOpen(true);
+                },
                 () => Swal.fire({
                     title: 'GPS Gagal',
                     text: 'Gunakan fitur "Pilih di Peta".',
@@ -516,11 +551,16 @@ const MapPage = () => {
         }
     };
 
-    const handleLocationSelected = (coords) => { setUserLoc(coords); setIsSelectingLoc(false); resetRoute(); };
-    const resetRoute = () => { setRoutePath(null); setActiveRouteName(''); setRouteInfo(null); };
+    const handleLocationSelected = (coords) => { 
+        setUserLoc(coords); 
+        setIsSelectingLoc(false); 
+        resetRoute(); 
+        setIsLocationMenuOpen(true);
+    };
+    const resetRoute = () => { setRoutePath(null); setActiveRouteName(''); setActiveRouteDest(null); setRouteInfo(null); };
     const clearLocation = () => { setUserLoc(null); resetRoute(); setIsSelectingLoc(false); };
 
-    const getRoute = async (destLat, destLon, destName) => {
+    const getRoute = async (destLat, destLon, destName, destObj = null) => {
         if (!userLoc) return Swal.fire({
             title: 'Tentukan Titik Awal',
             text: 'Pilih lokasi Anda terlebih dahulu untuk mencari rute.',
@@ -546,6 +586,7 @@ const MapPage = () => {
                 const routeData = response.data.routes[0];
                 setRoutePath(routeData.geometry.coordinates.map(c => [c[1], c[0]]));
                 setActiveRouteName(destName);
+                if (destObj) setActiveRouteDest(destObj);
                 setRouteInfo({ distance: (routeData.distance / 1000).toFixed(1), duration: Math.ceil(routeData.duration / 60) });
                 if (window.innerWidth < 768) setIsSidebarOpen(false);
             }
@@ -567,9 +608,9 @@ const MapPage = () => {
     };
 
     const formatDuration = (minutes) => {
-        if (minutes < 60) return `${minutes} Menit`;
+        if (minutes < 60) return `${minutes} mnt`;
         const h = Math.floor(minutes / 60), m = minutes % 60;
-        return `${h} Jam${m > 0 ? ` ${m} Menit` : ''}`;
+        return `${h} j${m > 0 ? ` ${m} mnt` : ''}`;
     };
 
     const topWisata = [...wisataList].sort((a, b) => (b.pengunjung_2024 || 0) - (a.pengunjung_2024 || 0)).slice(0, 3);
@@ -589,7 +630,7 @@ const MapPage = () => {
     };
 
     return (
-        <div className="flex flex-col h-screen overflow-hidden bg-gray-100 font-sans relative">
+        <div className="flex flex-col h-[100dvh] w-full overflow-hidden bg-gray-100 font-sans relative">
             <style>{`
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -984,7 +1025,7 @@ const MapPage = () => {
                                             {filteredWisata.map((item, index) => (
                                                 <WisataCard key={item.wisata_id} item={item} index={index}
                                                     userLoc={userLoc} activeRouteName={activeRouteName} routeInfo={routeInfo}
-                                                    onCekJalur={() => getRoute(item.latitude, item.longitude, item.nama_wisata)}
+                                                    onCekJalur={() => getRoute(item.latitude, item.longitude, item.nama_wisata, item)}
                                                     formatDuration={formatDuration}
                                                     onSelect={(w) => { setSelectedWisata(w); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                                                 />
@@ -1122,7 +1163,7 @@ const MapPage = () => {
                 <div className={`flex-1 relative z-0 ${isSelectingLoc ? 'cursor-crosshair' : ''}`}>
 
                     {/* Floating Search & Category Panel */}
-                    <div className={`absolute top-4 md:top-6 z-[1000] transition-all duration-500 ease-in-out flex flex-col gap-3 w-full md:w-auto
+                    <div className={`absolute top-[calc(env(safe-area-inset-top,0px)+16px)] md:top-6 z-[1000] transition-all duration-500 ease-in-out flex flex-col gap-3 w-full md:w-auto
                         ${isSidebarOpen
                             ? 'left-0 md:left-[350px] opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'
                             : 'left-0 md:left-6 opacity-100 pointer-events-auto'
@@ -1399,6 +1440,7 @@ const MapPage = () => {
                         />
                         <MapEvents isSelectingLoc={isSelectingLoc} onLocationSelected={handleLocationSelected} onMapClick={() => setSelectedWisata(null)} />
                         <MapCenterTracker isSelectingLoc={isSelectingLoc} onCenterChange={setMapCenter} />
+                        <MapResetTrigger trigger={resetTrigger} />
 
                         {dataBatasPemalang && (
                             <GeoJSON 
@@ -1481,7 +1523,7 @@ const MapPage = () => {
                     </MapContainer>
 
                     {/* BOTTOM DESTINATION CARD */}
-                    {selectedWisata && (
+                    {selectedWisata && !routeInfo && (
                         <div className="absolute bottom-[75px] md:bottom-10 left-1/2 transform -translate-x-1/2 w-[92%] md:w-auto md:max-w-[500px] z-[3000] animate-in slide-in-from-bottom duration-500">
                             <div className="bg-white rounded-3xl md:rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] border border-white/50 p-2.5 md:p-4 relative group overflow-hidden">
                                 <button onClick={() => setSelectedWisata(null)}
@@ -1519,7 +1561,7 @@ const MapPage = () => {
                                         <div className="flex gap-2 mt-1.5 md:mt-2">
                                             <Link to={`/wisata/${selectedWisata.wisata_id}`} className="flex-[1.5] py-2 md:py-3 bg-blue-500 text-white text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-xl md:rounded-2xl text-center shadow-lg shadow-blue-100 hover:bg-blue-600 transition active:scale-95 flex items-center justify-center">Lihat Detail</Link>
                                             <button
-                                                onClick={() => getRoute(selectedWisata.latitude, selectedWisata.longitude, selectedWisata.nama_wisata)}
+                                                onClick={() => getRoute(selectedWisata.latitude, selectedWisata.longitude, selectedWisata.nama_wisata, selectedWisata)}
                                                 className="flex-1 py-2 md:py-3 bg-gray-50 text-gray-700 text-[9px] md:text-[11px] font-black uppercase tracking-widest rounded-xl md:rounded-2xl hover:bg-gray-100 transition flex items-center justify-center gap-1.5 active:scale-95"
                                             >
                                                 <Navigation size={12} className="md:w-3.5 md:h-3.5" strokeWidth={3} />
@@ -1531,63 +1573,166 @@ const MapPage = () => {
                             </div>
                         </div>
                     )}
+
+                    {/* ROUTE INFO BOTTOM SHEET (Mobile & Desktop) */}
+                    {routeInfo && (
+                        <div className="absolute bottom-[60px] md:bottom-10 left-0 md:left-1/2 transform md:-translate-x-1/2 w-full md:w-[400px] z-[3000] animate-in slide-in-from-bottom duration-500">
+                            <div className="bg-white rounded-t-[32px] md:rounded-[28px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] md:shadow-[0_20px_60px_rgba(0,0,0,0.2)] border-t md:border border-gray-100 px-5 pt-4 pb-6 md:p-4 relative overflow-hidden h-[185px] md:h-auto flex flex-col">
+                                {/* Tab Mode Berkendara & Tutup */}
+                                <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-2 shrink-0">
+                                    <div className="flex items-center gap-2 text-[#004DA4] border-b-2 border-[#004DA4] pb-2 -mb-[9px] px-2">
+                                        <Navigation size={18} strokeWidth={2.5} className="fill-[#004DA4] text-white" />
+                                        <span className="text-xs font-black tracking-wide">Berkendara</span>
+                                    </div>
+                                    <button onClick={() => { setRouteInfo(null); setRoutePath(null); setActiveRouteName(''); }}
+                                        className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-full transition-colors active:scale-95 shrink-0">
+                                        <X size={16} strokeWidth={3} />
+                                    </button>
+                                </div>
+                                
+                                {/* Info Waktu, Jarak, & Destinasi */}
+                                <div className="flex gap-3 px-2 mb-2 shrink-0 mt-1">
+                                    {activeRouteDest?.foto_utama ? (
+                                        <div className="w-[52px] h-[52px] md:w-14 md:h-14 rounded-[14px] overflow-hidden shrink-0 shadow-sm border border-gray-100 bg-gray-100">
+                                            <img src={activeRouteDest.foto_utama} alt={activeRouteName} className="w-full h-full object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className="w-[52px] h-[52px] md:w-14 md:h-14 rounded-[14px] bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100/50">
+                                            <MapPin size={24} className="text-blue-400" strokeWidth={2} />
+                                        </div>
+                                    )}
+                                    <div className="flex flex-col justify-center flex-1 min-w-0">
+                                        <div className="flex items-baseline gap-1.5 mb-1.5">
+                                            <span className="text-[20px] md:text-[24px] font-black text-[#D97706] leading-none tracking-tight">{formatDuration(routeInfo.duration)}</span>
+                                            <span className="text-[12px] font-bold text-gray-500 tracking-tight">({routeInfo.distance} km)</span>
+                                        </div>
+                                        <h4 className="text-[12px] font-bold text-gray-800 line-clamp-1">{activeRouteName}</h4>
+                                        <p className="text-[10px] font-semibold text-gray-400 line-clamp-1 mt-0.5">{activeRouteDest?.nama_kategori || 'Destinasi Wisata'}</p>
+                                    </div>
+                                </div>
+                                
+                                {/* Aksi */}
+                                <div className="flex gap-3 px-1 mt-auto shrink-0">
+                                    <button onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&origin=${userLoc[0]},${userLoc[1]}&destination=${selectedWisata?.latitude},${selectedWisata?.longitude}`, '_blank')} 
+                                        className="flex-1 bg-[#004DA4] hover:bg-[#003c80] text-white py-3.5 md:py-4 rounded-[18px] font-black text-[11px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,77,164,0.25)] active:scale-95 transition-all">
+                                        <Navigation size={16} className="rotate-45 relative bottom-[1px]" strokeWidth={2.5} />
+                                        Mulai Navigasi
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* ===================== BOTTOM SHEET (Mobile Only) ===================== */}
+
+
+            {/* Mobile Bottom Sheet (Pilih Lokasi) */}
             <AnimatePresence>
-                {/* Mobile Legend Bottom Sheet */}
-                {!(selectedWisata || isSidebarOpen || isSelectingLoc) && (
+                {isLocationMenuOpen && (
                     <motion.div
-                        initial={false}
-                        animate={{ y: isMobileLegendOpen ? 0 : 85 }}
+                        initial={{ y: "100%", opacity: 0.5 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: "100%", opacity: 0 }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         drag="y"
                         dragConstraints={{ top: 0, bottom: 0 }}
-                        dragElastic={0.1}
+                        dragElastic={0.2}
                         onDragEnd={(e, info) => {
                             if (info.offset.y > 20) {
-                                setIsMobileLegendOpen(false);
+                                setIsLocationMenuOpen(false);
                             } else if (info.offset.y < -20) {
-                                setIsMobileLegendOpen(true);
+                                setIsLocationMenuOpen(true);
                             }
                         }}
-                        className="md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] flex flex-col h-[155px] border-t border-gray-100"
+                        className="md:hidden absolute bottom-[60px] left-0 w-full bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] z-[4000] flex flex-col h-[185px] border-t border-gray-100"
                     >
                         {/* Drag Handle */}
-                        <div className="w-full flex justify-center py-4 shrink-0 cursor-grab active:cursor-grabbing touch-none" onClick={() => setIsMobileLegendOpen(!isMobileLegendOpen)}>
+                        <div className="w-full flex justify-center py-4 shrink-0 cursor-grab active:cursor-grabbing touch-none" onClick={() => setIsLocationMenuOpen(!isLocationMenuOpen)}>
                             <div className="w-12 h-[5px] bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"></div>
                         </div>
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-hidden px-5 flex flex-col">
-                            {/* Legenda Peta */}
                             <div>
-                                <div className="flex items-center justify-between mb-4 cursor-pointer" onClick={() => setIsMobileLegendOpen(!isMobileLegendOpen)}>
+                                <div className="flex items-center justify-between mb-2.5 cursor-pointer" onClick={() => setIsLocationMenuOpen(!isLocationMenuOpen)}>
                                     <h3 className="text-xs font-black text-gray-900 flex items-center gap-2">
-                                        <Layers size={14} className="text-blue-500" strokeWidth={3} />
-                                        Legenda Peta
+                                        <LocateIcon size={14} className="text-blue-500" strokeWidth={3} />
+                                        Titik Awal Lokasi
                                     </h3>
                                     <button className="text-gray-400 p-1">
-                                        <ChevronRight size={16} className={`transition-transform duration-300 ${isMobileLegendOpen ? 'rotate-90' : '-rotate-90'}`} />
+                                        <ChevronRight size={16} className={`transition-transform duration-300 ${isLocationMenuOpen ? 'rotate-90' : '-rotate-90'}`} />
                                     </button>
                                 </div>
-                                <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-                                    {[
-                                        { label: 'Bahari', icon: <Waves size={16} />, color: 'bg-blue-50 text-blue-500' },
-                                        { label: 'Alam', icon: <TreesIcon size={16} />, color: 'bg-emerald-50 text-emerald-500' },
-                                        { label: 'Religi', icon: <MosqueIcon size={16} />, color: 'bg-orange-50 text-orange-500' },
-                                        { label: 'Buatan', icon: <MonumentIcon size={16} />, color: 'bg-purple-50 text-purple-500' },
-                                        { label: 'Batas', icon: <div className="w-4 h-[2px] bg-gray-400"></div>, color: 'bg-gray-50 text-gray-600' }
-                                    ].map((leg) => (
-                                        <div key={leg.label} className="flex flex-col items-center gap-2 shrink-0 w-[48px]">
-                                            <div className={`w-12 h-12 rounded-full ${leg.color} flex items-center justify-center border border-white shadow-[0_4px_10px_rgba(0,0,0,0.03)]`}>
-                                                {leg.icon}
+                                
+                                {userLoc ? (
+                                    <div className="bg-gradient-to-br from-[#2E82F7] to-[#1464E6] rounded-[20px] px-4 py-3 text-white shadow-[0_8px_24px_rgba(46,130,247,0.3)] relative overflow-hidden">
+                                        {/* decorative radar rings */}
+                                        <div className="absolute top-6 right-[70px] flex items-center justify-center pointer-events-none">
+                                            <div className="absolute w-[80px] h-[80px] border-[1.5px] border-white/25 rounded-full"></div>
+                                            <div className="absolute w-[140px] h-[140px] border border-white/15 rounded-full"></div>
+                                            <div className="absolute w-[200px] h-[200px] border border-white/10 rounded-full"></div>
+                                            
+                                            {/* Paper plane icon wrapper */}
+                                            <div className="absolute w-8 h-8 rounded-full border-[1.5px] border-white/30 flex items-center justify-center bg-transparent backdrop-blur-sm">
+                                                <Navigation size={14} strokeWidth={2.5} className="rotate-45 relative right-0.5 top-0.5" />
                                             </div>
-                                            <span className="text-[9px] font-black text-gray-800 text-center tracking-wide">{leg.label}</span>
                                         </div>
-                                    ))}
-                                </div>
+
+                                        <div className="flex items-start justify-between mb-2 relative z-10">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="w-2 h-2 bg-[#96F39A] rounded-full shadow-[0_0_8px_rgba(150,243,154,0.6)] animate-pulse"></span>
+                                                    <span className="text-[14px] font-extrabold text-white tracking-wide">Titik Aktif</span>
+                                                </div>
+                                                <span className="text-[10px] font-medium text-blue-100">Radius Pencarian</span>
+                                            </div>
+                                            
+                                            <div className="flex flex-col items-end gap-1">
+                                                <button onClick={clearLocation} className="text-[9px] font-extrabold text-[#2E82F7] bg-white hover:bg-gray-50 px-3 py-1 rounded-full shadow-sm transition-colors relative z-20">
+                                                    Hapus
+                                                </button>
+                                                <span className="text-[18px] font-black text-white leading-none mt-2">{radius} km</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative z-10 flex items-center gap-2 mt-1">
+                                            <span className="text-[9px] font-semibold text-blue-100">1 km</span>
+                                            <input type="range" min="1" max="50" className="flex-1 accent-white cursor-pointer h-1.5 bg-white/20 rounded-full appearance-none outline-none" value={radius} onChange={(e) => setRadius(parseInt(e.target.value))} />
+                                            <span className="text-[9px] font-semibold text-blue-100">50 km</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 gap-3 w-full pb-2">
+                                        <div onClick={() => { getLocationGPS(); setIsLocationMenuOpen(false); }} 
+                                            className="relative overflow-hidden bg-gradient-to-br from-[#2E82F7] to-[#1464E6] rounded-[16px] p-2.5 flex flex-col items-center justify-center gap-1 shadow-[0_8px_20px_rgba(46,130,247,0.25)] cursor-pointer active:scale-95 transition-transform group"
+                                        >
+                                            {/* Decorative Rings */}
+                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70px] h-[70px] border-[1.5px] border-white/20 rounded-full"></div>
+                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110px] h-[110px] border border-white/10 rounded-full"></div>
+                                            
+                                            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center z-10 text-[#2E82F7] shadow-sm group-hover:scale-105 transition-transform">
+                                                <Navigation size={16} strokeWidth={2.5} />
+                                            </div>
+                                            <div className="z-10 flex flex-col items-center mt-0.5">
+                                                <span className="text-[11px] font-extrabold text-white tracking-wide leading-tight">GPS Otomatis</span>
+                                            </div>
+                                        </div>
+
+                                        <div onClick={() => { setIsSelectingLoc(!isSelectingLoc); setIsLocationMenuOpen(false); }} 
+                                            className={`relative overflow-hidden rounded-[16px] p-2.5 flex flex-col items-center justify-center gap-1 cursor-pointer active:scale-95 transition-transform group border-2 
+                                                ${isSelectingLoc ? 'bg-blue-50/50 border-[#2E82F7] shadow-[0_8px_20px_rgba(46,130,247,0.1)]' : 'bg-white border-[#F1F3F9] shadow-[0_4px_12px_rgba(0,0,0,0.02)]'}`}
+                                        >
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 shadow-sm group-hover:scale-105 transition-transform ${isSelectingLoc ? 'bg-[#2E82F7] text-white shadow-blue-200' : 'bg-[#F1F4F9] text-[#2E82F7]'}`}>
+                                                <MapPin size={16} strokeWidth={2.5} className={isSelectingLoc ? "animate-bounce" : ""} />
+                                            </div>
+                                            <div className="z-10 flex flex-col items-center mt-0.5">
+                                                <span className={`text-[11px] font-extrabold tracking-wide leading-tight ${isSelectingLoc ? 'text-[#2E82F7]' : 'text-gray-800'}`}>Pilih Manual</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </motion.div>
@@ -1601,16 +1746,43 @@ const MapPage = () => {
                     <Home size={22} strokeWidth={2.5} />
                     <span className="text-[9px] font-black tracking-widest">Beranda</span>
                 </Link>
-                <div className="flex flex-col items-center gap-1 text-blue-500 w-16 transition-colors cursor-pointer">
-                    <div className="relative">
+                <div 
+                    onClick={() => {
+                        setResetTrigger(prev => prev + 1);
+                        setRoutePath(null);
+                        setRouteInfo(null);
+                        setSelectedWisata(null);
+                        setSearch('');
+                        setKategori('');
+                        setIsLocationMenuOpen(false);
+                        setIsMapLayersOpen(false);
+                        if (window.innerWidth < 768) setIsSidebarOpen(false);
+                    }}
+                    className="flex flex-col items-center gap-1 text-blue-500 w-16 transition-colors cursor-pointer group"
+                >
+                    <div className="relative group-active:scale-95 transition-transform">
                         <MapPin size={22} strokeWidth={2.5} className="fill-blue-500 text-white" />
                     </div>
                     <span className="text-[9px] font-black tracking-widest">Explore</span>
                 </div>
-                <div onClick={() => setIsMapLayersOpen(!isMapLayersOpen)} className={`flex flex-col items-center gap-1 w-16 transition-colors cursor-pointer ${isMapLayersOpen ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'}`}>
+                
+                {/* NEW: Titik Awal Shortcut */}
+                <div 
+                    onClick={() => { 
+                        setIsLocationMenuOpen(!isLocationMenuOpen); 
+                        setIsMapLayersOpen(false); 
+                    }} 
+                    className={`flex flex-col items-center gap-1 w-16 transition-colors cursor-pointer ${isSelectingLoc || isLocationMenuOpen ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'}`}
+                >
+                    <LocateIcon size={22} strokeWidth={2.5} className={isSelectingLoc ? "animate-pulse" : ""} />
+                    <span className="text-[9px] font-black tracking-widest">Lokasi</span>
+                </div>
+
+                <div onClick={() => { setIsMapLayersOpen(!isMapLayersOpen); setIsLocationMenuOpen(false); setIsSelectingLoc(false); }} className={`flex flex-col items-center gap-1 w-16 transition-colors cursor-pointer ${isMapLayersOpen ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'}`}>
                     <Layers size={22} strokeWidth={2.5} />
                     <span className="text-[9px] font-black tracking-widest">Peta</span>
                 </div>
+
 
                 {/* Jenis Peta Popup (Mobile Only) */}
                 {isMapLayersOpen && (
