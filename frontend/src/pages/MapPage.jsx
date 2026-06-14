@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useNavigate, useSearchParams, Link, Outlet } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, Circle, useMapEvents, Polyline, useMap, ZoomControl } from 'react-leaflet';
 import axios from 'axios';
@@ -1792,7 +1792,9 @@ const MapPage = () => {
                 )}
 
             </div>
-            <Outlet />
+            <Suspense fallback={null}>
+                <Outlet />
+            </Suspense>
         </div>
     );
 };
