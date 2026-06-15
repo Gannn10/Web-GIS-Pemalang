@@ -33,7 +33,14 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     console.error("Tertangkap oleh ErrorBoundary:", error, errorInfo);
     // Jika error karena gagal me-load chunk (versi baru di-deploy), otomatis refresh halaman
-    if (error.name === 'ChunkLoadError' || error.message.includes('Failed to fetch dynamically imported module') || error.message.includes('Importing a module script failed')) {
+    const errorMsg = error?.message?.toLowerCase() || '';
+    if (
+      error?.name === 'ChunkLoadError' || 
+      errorMsg.includes('failed to fetch dynamically imported module') || 
+      errorMsg.includes('importing a module script failed') ||
+      errorMsg.includes('failed to fetch') ||
+      errorMsg.includes('load failed')
+    ) {
       window.location.reload();
     }
   }

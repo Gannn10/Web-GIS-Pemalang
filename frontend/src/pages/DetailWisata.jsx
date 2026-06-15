@@ -34,7 +34,7 @@ const formatHarga = (h) => {
 };
 
 const formatJam = (buka, tutup) => {
-    if (buka && tutup) return `${buka.substring(0, 5)} – ${tutup.substring(0, 5)}`;
+    if (typeof buka === 'string' && typeof tutup === 'string') return `${buka.substring(0, 5)} – ${tutup.substring(0, 5)}`;
     return '08:00 – 17:00';
 };
 
