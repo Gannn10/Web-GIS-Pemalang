@@ -95,11 +95,13 @@ const TableWisata = ({ data, onDelete, onEdit }) => {
                                                         title={f.nama_fasilitas} 
                                                         className="w-6 h-6 bg-slate-100 rounded-lg flex items-center justify-center text-xs border border-slate-200/40"
                                                     >
-                                                        {f.icon && (f.icon.includes('/') || f.icon.includes('.') || f.icon.startsWith('http')) ? (
-                                                            <img src={f.icon} alt={f.nama_fasilitas} className="w-4 h-4 object-contain" />
-                                                        ) : (
-                                                            f.icon
-                                                        )}
+                                                        <span className="text-sm flex items-center justify-center">
+                                                            {f.icon && (f.icon.includes('/') || f.icon.includes('.') || f.icon.startsWith('http')) && !f.icon.includes('localhost') ? (
+                                                                <img src={f.icon} alt={f.nama_fasilitas} className="w-4 h-4 object-contain" />
+                                                            ) : (
+                                                                f.icon && f.icon.includes('localhost') ? '🕌' : f.icon
+                                                            )}
+                                                        </span>
                                                     </span>
                                                 ))
                                             ) : (
