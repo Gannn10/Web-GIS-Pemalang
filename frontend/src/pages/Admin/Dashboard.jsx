@@ -209,10 +209,6 @@ const Dashboard = () => {
                             <LayoutDashboard size={16} />
                             Dashboard
                         </a>
-                        <Link to="/explore" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-black uppercase tracking-wider transition-all">
-                            <Map size={16} />
-                            Buka Peta Wisata
-                        </Link>
                         <Link to="/" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-black uppercase tracking-wider transition-all">
                             <Home size={16} />
                             Kembali Beranda
