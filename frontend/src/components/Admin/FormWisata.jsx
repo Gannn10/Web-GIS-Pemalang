@@ -172,10 +172,10 @@ const FormWisata = ({ formData, setFormData, onSubmit, isEditing, availableFasil
                                             onChange={() => handleFasilitasToggle(f.fasilitas_id)}
                                         />
                                         <span className="text-base leading-none flex items-center justify-center w-5 h-5">
-                                            {f.icon && (f.icon.includes('/') || f.icon.includes('.') || f.icon.startsWith('http')) && !f.icon.includes('localhost') ? (
+                                            {f.icon && (f.icon.includes('/') || f.icon.includes('.') || f.icon.startsWith('http')) && !f.icon.includes('localhost') && !f.icon.includes('tempat_ibadah') ? (
                                                 <img src={f.icon} alt={f.nama_fasilitas} className="w-5 h-5 object-contain" />
                                             ) : (
-                                                f.icon && f.icon.includes('localhost') ? '🕌' : f.icon
+                                                f.icon && (f.icon.includes('localhost') || f.icon.includes('tempat_ibadah')) ? '🕌' : f.icon
                                             )}
                                         </span>
                                         <span className="text-[9px] font-black uppercase tracking-wider truncate">{f.nama_fasilitas}</span>

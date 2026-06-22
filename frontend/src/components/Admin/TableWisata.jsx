@@ -96,10 +96,10 @@ const TableWisata = ({ data, onDelete, onEdit }) => {
                                                         className="w-6 h-6 bg-slate-100 rounded-lg flex items-center justify-center text-xs border border-slate-200/40"
                                                     >
                                                         <span className="text-sm flex items-center justify-center">
-                                                            {f.icon && (f.icon.includes('/') || f.icon.includes('.') || f.icon.startsWith('http')) && !f.icon.includes('localhost') ? (
+                                                            {f.icon && (f.icon.includes('/') || f.icon.includes('.') || f.icon.startsWith('http')) && !f.icon.includes('localhost') && !f.icon.includes('tempat_ibadah') ? (
                                                                 <img src={f.icon} alt={f.nama_fasilitas} className="w-4 h-4 object-contain" />
                                                             ) : (
-                                                                f.icon && f.icon.includes('localhost') ? '🕌' : f.icon
+                                                                f.icon && (f.icon.includes('localhost') || f.icon.includes('tempat_ibadah')) ? '🕌' : f.icon
                                                             )}
                                                         </span>
                                                     </span>
