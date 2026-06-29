@@ -1606,7 +1606,7 @@ const MapPage = () => {
                                 
                                 {/* Aksi */}
                                 <div className="flex gap-3 px-1 mt-auto shrink-0">
-                                    <button onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&origin=${userLoc[0]},${userLoc[1]}&destination=${selectedWisata?.latitude},${selectedWisata?.longitude}`, '_blank')} 
+                                    <button onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&origin=${userLoc[0]},${userLoc[1]}&destination=${encodeURIComponent((selectedWisata?.nama_wisata || '') + ', Pemalang')}`, '_blank')} 
                                         className="flex-1 bg-[#004DA4] hover:bg-[#003c80] text-white py-3.5 md:py-4 rounded-[18px] font-black text-[11px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(0,77,164,0.25)] active:scale-95 transition-all">
                                         <Navigation size={16} className="rotate-45 relative bottom-[1px]" strokeWidth={2.5} />
                                         Mulai Navigasi
