@@ -1,5 +1,6 @@
 const pool = require('../config/database');
 const { formatImageUrl } = require('../utils/imageUrlFormatter');
+const { sendSuccess, sendError } = require('../utils/responseHelper');
 
 /**
  * ========================================
@@ -18,16 +19,9 @@ exports.getAllFasilitas = async (req, res) => {
             return row;
         });
         
-        res.json({
-            success: true,
-            count: formattedRows.length,
-            data: formattedRows
-        });
+        return sendSuccess(res, formattedRows, 'Berhasil mengambil data fasilitas', formattedRows.length);
     } catch (error) {
         console.error('Error in getAllFasilitas:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Gagal mengambil data fasilitas'
-        });
+        return sendError(res, 'Gagal mengambil data fasilitas', 500, error);
     }
 };

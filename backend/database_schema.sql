@@ -57,14 +57,32 @@ CREATE TABLE wisata (
     
     -- Media
     foto_utama VARCHAR(255),
+    foto_2 VARCHAR(255),
+    foto_3 VARCHAR(255),
+    foto_populer VARCHAR(255),
     galeri JSONB,
     
     -- Status & Metadata
+    daya_tarik TEXT,
+    is_populer BOOLEAN DEFAULT FALSE,
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'maintenance')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER REFERENCES users(user_id)
 );
+
+-- ============================================
+-- SCRIPT ALTER TABLE (UNTUK DATABASE PRODUCTION/RENDER)
+-- ============================================
+-- JALANKAN BARIS DI BAWAH INI JIKA TABEL SUDAH ADA DATANYA
+/*
+ALTER TABLE wisata
+ADD COLUMN IF NOT EXISTS foto_2 VARCHAR(255),
+ADD COLUMN IF NOT EXISTS foto_3 VARCHAR(255),
+ADD COLUMN IF NOT EXISTS foto_populer VARCHAR(255),
+ADD COLUMN IF NOT EXISTS daya_tarik TEXT,
+ADD COLUMN IF NOT EXISTS is_populer BOOLEAN DEFAULT FALSE;
+*/
 
 -- ============================================
 -- 4. TABEL FASILITAS

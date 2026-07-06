@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../config/jwt');
 
 module.exports = (req, res, next) => {
     // 1. Ambil token dari header
@@ -11,13 +12,18 @@ module.exports = (req, res, next) => {
 
     try {
         // 3. Verifikasi token (Bearer TOKEN_STRING)
-        // Kita split karena formatnya biasanya "Bearer <token>"
         const tokenString = token.startsWith('Bearer ') ? token.slice(7, token.length) : token;
         
-        const decoded = jwt.verify(tokenString, process.env.JWT_SECRET || 'rahasia_skripsi_super_aman');
+        const decoded = jwt.verify(tokenString, JWT_SECRET);
         
         // Simpan data user di request agar bisa dipakai di controller
         req.user = decoded;
+
+        // 4. Validasi role (hanya admin yang diizinkan untuk route yang memakai middleware ini)
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Akses ditolak. Anda bukan admin.' });
+        }
+
         next(); // Lanjut ke controller
     } catch (err) {
         res.status(401).json({ success: false, message: 'Token tidak valid' });

@@ -34,8 +34,11 @@ Proyek ini telah dikonfigurasi untuk siap di-*deploy* ke *production* menggunaka
 📦 WebGIS Pemalang
  ┣ 📂 backend/         # Server Node.js / Express
  ┃ ┣ 📂 config/        # Konfigurasi database & Cloudinary
- ┃ ┣ 📂 controllers/   # Logika bisnis (termasuk Algoritma Haversine)
+ ┃ ┣ 📂 controllers/   # Logika bisnis (CRUD)
+ ┃ ┣ 📂 middleware/    # Auth middleware (Validasi JWT & Admin Role)
  ┃ ┣ 📂 routes/        # Definisi Endpoint API
+ ┃ ┣ 📂 utils/         # Fungsi Helper Pembantu
+ ┃ ┃ ┗ 📜 haversine.js # Logika Algoritma Haversine
  ┃ ┗ 📜 server.js      # Entry point backend
  ┣ 📂 frontend/        # Aplikasi Client-side React.js
  ┃ ┣ 📂 public/        # Aset statis (ikon, video background)

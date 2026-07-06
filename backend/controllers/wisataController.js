@@ -1,17 +1,9 @@
 const pool = require('../config/database');
 const { formatWisataImages } = require('../utils/imageUrlFormatter');
-
-/**
- * Fungsi Pintar: Mengambil URL langsung dari Cloudinary
- */
-const getFileUrl = (req, fieldName) => {
-    // Kalau ada file yang di-upload via Cloudinary
-    if (req.files && req.files[fieldName]) {
-        return req.files[fieldName][0].path;
-    }
-    // Kalau nggak ada file yang di-upload, ambil dari request body biasa
-    return req.body[fieldName] || null;
-};
+const { hitungJarakHaversine } = require('../utils/haversine');
+const { getFileUrl } = require('../utils/fileHelper');
+const { parseFasilitasIds } = require('../utils/fasilitasHelper');
+const { sendSuccess, sendError } = require('../utils/responseHelper');
 
 /**
  * 1. GET Semua Wisata
@@ -20,7 +12,6 @@ exports.getAllWisata = async (req, res) => {
     try {
         const { kategori_id, keyword } = req.query;
         
-        // PERUBAHAN: Tambahkan w.kecamatan, w.deskripsi, w.jam_buka, w.jam_tutup di dalam SELECT
         let query = `
             SELECT 
                 w.wisata_id, w.nama_wisata, w.kecamatan, w.kategori_id, k.nama_kategori,
@@ -49,59 +40,21 @@ exports.getAllWisata = async (req, res) => {
 
         const result = await pool.query(query, params);
         const formattedRows = result.rows.map(row => formatWisataImages(row, req));
-        res.status(200).json({ success: true, count: formattedRows.length, data: formattedRows });
+        
+        return sendSuccess(res, formattedRows, 'Berhasil mengambil data wisata', formattedRows.length);
     } catch (error) { 
         console.error("Error Get All:", error);
-        res.status(500).json({ success: false, message: 'Server Error' }); 
+        return sendError(res, 'Gagal mengambil data wisata', 500, error);
     }
 };
-/**
- * Fungsi Pembantu: Konversi Derajat ke Radian (Untuk Algoritma Haversine)
- */
-const toRad = (value) => {
-    return (value * Math.PI) / 180;
-};
 
 /**
- * ============================================================================
- * LOGIKA MATEMATIKA ALGORITMA HAVERSINE MURNI
- * ============================================================================
- * PENJELASAN UNTUK SIDANG SKRIPSI:
- * Algoritma Haversine digunakan untuk menghitung jarak garis lurus (Great-Circle Distance)
- * antara dua titik di permukaan bumi yang melengkung/bulat, menggunakan garis lintang 
- * (latitude) dan garis bujur (longitude).
- */
-const hitungJarakHaversine = (lat1, lon1, lat2, lon2) => {
-    // 1. R = Konstanta Radius (Jari-jari) rata-rata Bumi dalam kilometer
-    const R = 6371; 
-    
-    // 2. Menghitung selisih lintang (ΔLat) dan bujur (ΔLon) lalu dikonversi ke format Radian
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    
-    // 3. Rumus "a" (Kuadrat setengah jarak tali busur / kuadrat jarak antar titik)
-    //    Inti rumus Haversine: a = sin²(Δlat/2) + cos(lat1) * cos(lat2) * sin²(Δlon/2)
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
-              
-    // 4. Rumus "c" (Jarak sudut / angular distance dalam radian)
-    //    Menggunakan fungsi arc-tangent (atan2) yang stabil untuk presisi jarak dekat maupun jauh
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
-    // 5. Rumus Akhir: Mengalikan radius bumi (R) dengan jarak sudut (c)
-    const jarak = R * c; // Output akhir berupa jarak garis lurus (geodesik) dalam satuan Kilometer
-    
-    return jarak;
-};
-
-/**
- * 2. GET Wisata Terdekat (Menggunakan Algoritma Haversine di Controller)
+ * 2. GET Wisata Terdekat (Menggunakan Algoritma Haversine dari Helper)
  */
 exports.getWisataTerdekat = async (req, res) => {
     try {
         const { lat, lon, radius } = req.query;
-        if (!lat || !lon) return res.status(400).json({ success: false, message: 'Lat & Lon wajib diisi' });
+        if (!lat || !lon) return sendError(res, 'Lat & Lon wajib diisi', 400);
 
         const userLat = parseFloat(lat);
         const userLon = parseFloat(lon);
@@ -140,10 +93,10 @@ exports.getWisataTerdekat = async (req, res) => {
         // 4. Batasi 10 destinasi teratas & format response
         const finalData = wisataTerdekat.slice(0, 10).map(row => formatWisataImages(row, req));
         
-        res.status(200).json({ success: true, data: finalData });
+        return sendSuccess(res, finalData, 'Berhasil mengambil wisata terdekat');
     } catch (error) { 
         console.error("Error Haversine:", error);
-        res.status(500).json({ success: false, message: 'Server Error' }); 
+        return sendError(res, 'Gagal mengambil wisata terdekat', 500, error);
     }
 };
 
@@ -168,14 +121,19 @@ exports.getWisataById = async (req, res) => {
             WHERE w.wisata_id = $1
         `;
         const result = await pool.query(query, [id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, message: 'Wisata tidak ditemukan' });
+        
+        if (result.rows.length === 0) return sendError(res, 'Wisata tidak ditemukan', 404);
+        
         const formattedWisata = formatWisataImages(result.rows[0], req);
-        res.status(200).json({ success: true, data: formattedWisata });
-    } catch (error) { res.status(500).json({ success: false, message: 'Server Error' }); }
+        return sendSuccess(res, formattedWisata, 'Berhasil mengambil detail wisata');
+    } catch (error) { 
+        console.error('Error Get Detail:', error);
+        return sendError(res, 'Gagal mengambil detail wisata', 500, error);
+    }
 };
 
 /**
- * 4. CREATE WISATA (Admin) - Dengan Multer
+ * 4. CREATE WISATA (Admin)
  */
 exports.createWisata = async (req, res) => {
     try {
@@ -213,41 +171,24 @@ exports.createWisata = async (req, res) => {
         const newWisataId = result.rows[0].wisata_id;
 
         // SIMPAN RELASI FASILITAS
-        if (req.body.fasilitas) {
-            let fasilitasIds = [];
-            try {
-                if (typeof req.body.fasilitas === 'string') {
-                    fasilitasIds = JSON.parse(req.body.fasilitas);
-                } else {
-                    fasilitasIds = req.body.fasilitas;
-                }
-            } catch (e) {
-                if (typeof req.body.fasilitas === 'string' && req.body.fasilitas.trim()) {
-                    fasilitasIds = req.body.fasilitas.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-                }
-            }
-
-            if (Array.isArray(fasilitasIds) && fasilitasIds.length > 0) {
-                fasilitasIds = [...new Set(fasilitasIds)].map(id => parseInt(id)).filter(id => !isNaN(id));
-                if (fasilitasIds.length > 0) {
-                    const insertFasilitasQuery = `
-                        INSERT INTO wisata_fasilitas (wisata_id, fasilitas_id)
-                        VALUES ${fasilitasIds.map((_, idx) => `($1, $${idx + 2})`).join(', ')}
-                    `;
-                    await pool.query(insertFasilitasQuery, [newWisataId, ...fasilitasIds]);
-                }
-            }
+        const fasilitasIds = parseFasilitasIds(req.body.fasilitas);
+        if (fasilitasIds.length > 0) {
+            const insertFasilitasQuery = `
+                INSERT INTO wisata_fasilitas (wisata_id, fasilitas_id)
+                VALUES ${fasilitasIds.map((_, idx) => `($1, $${idx + 2})`).join(', ')}
+            `;
+            await pool.query(insertFasilitasQuery, [newWisataId, ...fasilitasIds]);
         }
 
-        res.status(201).json({ success: true, message: 'Wisata berhasil ditambahkan', data: formatWisataImages(result.rows[0], req) });
+        return sendSuccess(res, formatWisataImages(result.rows[0], req), 'Wisata berhasil ditambahkan', null, 201);
     } catch (error) { 
         console.error('Error createWisata:', error);
-        res.status(500).json({ success: false, message: 'Gagal tambah wisata', error: error.message }); 
+        return sendError(res, 'Gagal tambah wisata', 500, error);
     }
 };
 
 /**
- * 5. UPDATE WISATA (Admin) - Dengan Multer
+ * 5. UPDATE WISATA (Admin)
  */
 exports.updateWisata = async (req, res) => {
     try {
@@ -258,7 +199,6 @@ exports.updateWisata = async (req, res) => {
             daya_tarik, is_populer 
         } = req.body;
 
-        // Ambil Link Gambar (Kalau ada file baru, ambil url file baru. Kalau nggak, pertahankan url lama dari req.body)
         const final_foto_utama = getFileUrl(req, 'foto_utama');
         const final_foto_2 = getFileUrl(req, 'foto_2');
         const final_foto_3 = getFileUrl(req, 'foto_3');
@@ -288,43 +228,24 @@ exports.updateWisata = async (req, res) => {
 
         const result = await pool.query(query, values);
 
-        if (result.rows.length === 0) return res.status(404).json({ success: false, message: 'Wisata tidak ditemukan' });
+        if (result.rows.length === 0) return sendError(res, 'Wisata tidak ditemukan', 404);
 
         // UPDATE RELASI FASILITAS
-        // 1. Hapus relasi lama
         await pool.query('DELETE FROM wisata_fasilitas WHERE wisata_id = $1', [id]);
         
-        // 2. Simpan relasi baru
-        if (req.body.fasilitas) {
-            let fasilitasIds = [];
-            try {
-                if (typeof req.body.fasilitas === 'string') {
-                    fasilitasIds = JSON.parse(req.body.fasilitas);
-                } else {
-                    fasilitasIds = req.body.fasilitas;
-                }
-            } catch (e) {
-                if (typeof req.body.fasilitas === 'string' && req.body.fasilitas.trim()) {
-                    fasilitasIds = req.body.fasilitas.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-                }
-            }
-
-            if (Array.isArray(fasilitasIds) && fasilitasIds.length > 0) {
-                fasilitasIds = [...new Set(fasilitasIds)].map(id => parseInt(id)).filter(id => !isNaN(id));
-                if (fasilitasIds.length > 0) {
-                    const insertFasilitasQuery = `
-                        INSERT INTO wisata_fasilitas (wisata_id, fasilitas_id)
-                        VALUES ${fasilitasIds.map((_, idx) => `($1, $${idx + 2})`).join(', ')}
-                    `;
-                    await pool.query(insertFasilitasQuery, [id, ...fasilitasIds]);
-                }
-            }
+        const fasilitasIds = parseFasilitasIds(req.body.fasilitas);
+        if (fasilitasIds.length > 0) {
+            const insertFasilitasQuery = `
+                INSERT INTO wisata_fasilitas (wisata_id, fasilitas_id)
+                VALUES ${fasilitasIds.map((_, idx) => `($1, $${idx + 2})`).join(', ')}
+            `;
+            await pool.query(insertFasilitasQuery, [id, ...fasilitasIds]);
         }
 
-        res.status(200).json({ success: true, message: 'Wisata berhasil diupdate', data: formatWisataImages(result.rows[0], req) });
+        return sendSuccess(res, formatWisataImages(result.rows[0], req), 'Wisata berhasil diupdate');
     } catch (error) { 
         console.error('Error updateWisata:', error);
-        res.status(500).json({ success: false, message: 'Gagal update wisata', error: error.message }); 
+        return sendError(res, 'Gagal update wisata', 500, error);
     }
 };
 
@@ -337,7 +258,10 @@ exports.deleteWisata = async (req, res) => {
         const query = `DELETE FROM wisata WHERE wisata_id = $1 RETURNING *`;
         const result = await pool.query(query, [id]);
 
-        if (result.rows.length === 0) return res.status(404).json({ success: false, message: 'Wisata tidak ditemukan' });
-        res.status(200).json({ success: true, message: 'Wisata berhasil dihapus' });
-    } catch (error) { res.status(500).json({ success: false, message: 'Gagal hapus wisata', error: error.message }); }
-};
+        if (result.rows.length === 0) return sendError(res, 'Wisata tidak ditemukan', 404);
+        return sendSuccess(res, null, 'Wisata berhasil dihapus');
+    } catch (error) { 
+        console.error('Error deleteWisata:', error);
+        return sendError(res, 'Gagal hapus wisata', 500, error);
+    }
+};
