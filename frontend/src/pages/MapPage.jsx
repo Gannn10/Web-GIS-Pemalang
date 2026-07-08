@@ -13,53 +13,12 @@ import { Search, MapPin, Navigation, Info, Menu, X, Home, Layers,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Custom SVG Icons to avoid lucide-react version compatibility issues
-const TreesIcon = ({ size = 18, className = "" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M10 22v-6.5M14 22v-4M4.5 10a2.5 2.5 0 0 1 0-5 3 3 0 0 1 5.9-1A3 3 0 0 1 15 6a3 3 0 0 1 5.25 2.5A2.5 2.5 0 0 1 19.5 13h-15Z" /></svg>
-);
+import { TreesIcon, MosqueIcon, GridIcon, MonumentIcon, UtensilsIcon, LocateIcon, StatsIcon, TerminalIcon } from '../components/icons/CustomIcons';
+import { calculateHaversine } from '../utils/haversine';
+import { WisataCard, getBadgeStyle } from '../components/Map/WisataCard';
+import { ZoomLocateControls } from '../components/Map/MapControls';
+import { MapResizer, MapCenterTracker, MapEvents, MapFlyer, MapResetTrigger } from '../components/Map/MapEvents';
 
-const MosqueIcon = ({ size = 18, className = "" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 22H2M12 22V13M12 9a4 4 0 0 1 4 4v9H8v-9a4 4 0 0 1 4-4Z" /><path d="M12 2v4M10 4h4" /></svg>
-);
-
-const GridIcon = ({ size = 18, className = "" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <rect width="7" height="7" x="3" y="3" rx="1.5" />
-        <rect width="7" height="7" x="14" y="3" rx="1.5" />
-        <rect width="7" height="7" x="14" y="14" rx="1.5" />
-        <rect width="7" height="7" x="3" y="14" rx="1.5" />
-    </svg>
-);
-
-const MonumentIcon = ({ size = 18, className = "" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m12 2 3 5v11H9V7z" />
-        <path d="M5 22h14" />
-        <path d="M9 18h6" />
-    </svg>
-);
-
-const UtensilsIcon = ({ size = 18, className = "" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v4M12 2v20M17 22H7M12 18H7M21 2v9a2 2 0 0 1-2 2h-5M19 2v4" /></svg>
-);
-
-const LocateIcon = ({ size = 18, className = "" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2" /></svg>
-);
-
-const StatsIcon = ({ size = 18, className = "" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <rect width="18" height="18" x="3" y="3" rx="2" />
-        <path d="M7 16v-4M12 16V9M17 16v-2" />
-    </svg>
-);
-
-const TerminalIcon = ({ size = 18, className = "" }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <polyline points="4 17 10 11 4 5" />
-        <line x1="12" y1="19" x2="20" y2="19" />
-    </svg>
-);
 
 import dataBatasPemalang from './pemalang.json';
 
@@ -82,13 +41,6 @@ const userIcon = L.divIcon({
 // =============================================
 // HELPER FUNCTIONS
 // =============================================
-const calculateHaversine = (lat1, lon1, lat2, lon2) => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-};
 const getCategoryIcon = (kategori, size = 16) => {
     switch (kategori) {
         case 'Wisata Bahari': return <Waves size={size} />;
@@ -100,46 +52,6 @@ const getCategoryIcon = (kategori, size = 16) => {
     }
 };
 
-const getBadgeStyle = (kategori) => {
-    const styles = {
-        'Wisata Bahari': {
-            bg: 'bg-blue-100 text-blue-700',
-            dot: 'bg-blue-500',
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1s2.5-.5 3-.5 1.2.5 2.5.5 2.5-.5 3-.5 1.2.5 2.5.5 2.5-.5 3-.5 1.2.5 2.5.5 1.9-.5 2.5-.5"/><path d="M2 12c.6.5 1.2 1 2.5 1s2.5-.5 3-.5 1.2.5 2.5.5 2.5-.5 3-.5 1.2.5 2.5.5 2.5-.5 3-.5 1.2.5 2.5.5 1.9-.5 2.5-.5"/><path d="M2 18c.6.5 1.2 1 2.5 1s2.5-.5 3-.5 1.2.5 2.5.5 2.5-.5 3-.5 1.2.5 2.5.5 2.5-.5 3-.5 1.2.5 2.5.5 1.9-.5 2.5-.5"/></svg>',
-            color: '#3b82f6'
-        },
-        'Wisata Alam': {
-            bg: 'bg-emerald-100 text-emerald-700',
-            dot: 'bg-emerald-500',
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 22v-6.5M14 22v-4M4.5 10a2.5 2.5 0 0 1 0-5 3 3 0 0 1 5.9-1A3 3 0 0 1 15 6a3 3 0 0 1 5.25 2.5A2.5 2.5 0 0 1 19.5 13h-15Z"/></svg>',
-            color: '#10b981'
-        },
-        'Wisata Religi': {
-            bg: 'bg-orange-100 text-orange-700',
-            dot: 'bg-orange-500',
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 22H2M12 22V13M12 9a4 4 0 0 1 4 4v9H8v-9a4 4 0 0 1 4-4Z"/><path d="M12 2v4M10 4h4"/></svg>',
-            color: '#f97316'
-        },
-        'Wisata Buatan': {
-            bg: 'bg-purple-100 text-purple-700',
-            dot: 'bg-purple-500',
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 5v11H9V7z"/><path d="M5 22h14"/><path d="M9 18h6"/></svg>',
-            color: '#a855f7'
-        },
-        'Wisata Kuliner': {
-            bg: 'bg-pink-100 text-pink-700',
-            dot: 'bg-pink-500',
-            icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v4"/><path d="M12 2v20"/><path d="M17 22H7"/><path d="M12 18H7"/><path d="M21 2v9a2 2 0 0 1-2 2h-5"/><path d="M19 2v4"/></svg>',
-            color: '#ec4899'
-        },
-    };
-    return styles[kategori] || {
-        bg: 'bg-gray-100 text-gray-600',
-        dot: 'bg-gray-400',
-        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
-        color: '#6b7280'
-    };
-};
 
 // Custom Marker Creator (Circular Badge Style with White Icons inside)
 const createCustomIcon = (kategori, isActive = false, isDimmed = false) => {
@@ -188,207 +100,6 @@ const createCustomIcon = (kategori, isActive = false, isDimmed = false) => {
     });
 };
 
-// =============================================
-// WISATA CARD COMPONENT (mirip referensi)
-// =============================================
-const WisataCard = ({ item, index, userLoc, activeRouteName, routeInfo, onCekJalur, formatDuration, onSelect }) => {
-    const isActive = activeRouteName === item.nama_wisata;
-    const badge = getBadgeStyle(item.nama_kategori);
-
-    return (
-        <div
-            onClick={() => onSelect(item)}
-            className={`group rounded-2xl border-2 transition-all duration-300 overflow-hidden cursor-pointer
-            ${isActive
-                    ? 'border-blue-500 bg-blue-50/40 shadow-[0_8px_25px_rgba(59,130,246,0.08)]'
-                    : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-[0_8px_25px_rgba(0,0,0,0.04)]'}`}
-        >
-            <div className="flex items-center gap-3 px-3 py-3">
-                {/* Thumbnail */}
-                <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-gray-50 border border-gray-100/50 relative shadow-inner">
-                    {item.foto_utama ? (
-                        <img src={item.foto_utama} alt={item.nama_wisata} loading="lazy"
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center text-blue-500 bg-blue-50" dangerouslySetInnerHTML={{ __html: badge.icon }} />
-                    )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-black truncate leading-tight mb-1.5 ${isActive ? 'text-blue-700' : 'text-gray-800'}`}>
-                        {item.nama_wisata}
-                    </p>
-                    <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider ${badge.bg}`}>
-                            {item.nama_kategori?.replace('Wisata ', '')}
-                        </span>
-                        {item.distance !== undefined && (
-                            <span className="text-[9px] font-bold text-gray-400">
-                                • {item.distance.toFixed(1)} km
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* Arrow */}
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300
-                    ${isActive ? 'bg-blue-500 text-white shadow-blue-200 shadow-md' : 'bg-gray-50 text-gray-300 group-hover:bg-blue-50 group-hover:text-blue-400'}`}>
-                    <ChevronRight size={14} strokeWidth={2.5} />
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// =============================================
-// MAP HELPER COMPONENTS
-// =============================================
-const MapResizer = ({ isSidebarOpen }) => {
-    const map = useMap();
-    useEffect(() => {
-        const timeout = setTimeout(() => { map.invalidateSize(); }, 300);
-        return () => clearTimeout(timeout);
-    }, [isSidebarOpen, map]);
-    return null;
-};
-
-const MapCenterTracker = ({ isSelectingLoc, onCenterChange }) => {
-    const map = useMapEvents({
-        move() {
-            if (isSelectingLoc) {
-                const center = map.getCenter();
-                onCenterChange([center.lat, center.lng]);
-            }
-        }
-    });
-
-    useEffect(() => {
-        if (isSelectingLoc) {
-            const center = map.getCenter();
-            onCenterChange([center.lat, center.lng]);
-        }
-    }, [isSelectingLoc, map, onCenterChange]);
-
-    return null;
-};
-
-const MapEvents = ({ isSelectingLoc, onLocationSelected, onMapClick }) => {
-    useMapEvents({
-        click(e) {
-            if (isSelectingLoc) {
-                // Saat mode pilih manual, klik di mana saja akan menggeser peta ke titik tersebut
-                e.target.flyTo(e.latlng, e.target.getZoom(), {
-                    animate: true,
-                    duration: 0.5
-                });
-            } else {
-                onMapClick();
-            }
-        }
-    });
-    return null;
-};
-
-const MapFlyer = ({ userLoc, selectedWisata }) => {
-    const map = useMap();
-
-    useEffect(() => {
-        if (selectedWisata?.latitude && selectedWisata?.longitude) {
-            // Beri offset sedikit ke atas agar tidak tertutup kartu bawah
-            const targetLat = parseFloat(selectedWisata.latitude);
-            const targetLon = parseFloat(selectedWisata.longitude);
-
-            // Geser sedikit ke bawah (target latitude dikurangi sedikit) 
-            // agar marker muncul di area atas layar
-            const offset = 0.012; 
-            map.flyTo([targetLat - offset, targetLon], 12.5, {
-                animate: true,
-                duration: 2.0
-            });
-        }
-    }, [selectedWisata, map]);
-
-    useEffect(() => {
-        if (userLoc) {
-            map.flyTo([userLoc[0] - 0.010, userLoc[1]], 12, {
-                animate: true,
-                duration: 2.0
-            });
-        }
-    }, [userLoc, map]);
-
-    return null;
-};
-
-const MapResetTrigger = ({ trigger }) => {
-    const map = useMap();
-    useEffect(() => {
-        if (trigger > 0) {
-            map.flyTo([-7.0125, 109.3772], 11, {
-                animate: true,
-                duration: 2.0
-            });
-        }
-    }, [trigger, map]);
-    return null;
-};
-
-const ZoomLocateControls = ({ onLocate, onSelectManual, isSelectingLoc, userLoc }) => {
-    const map = useMap();
-
-    const handleFlyToUser = () => {
-        if (userLoc) {
-            map.flyTo([userLoc[0] - 0.010, userLoc[1]], 12, {
-                animate: true,
-                duration: 2.0
-            });
-        } else {
-            onLocate();
-        }
-    };
-
-    return (
-        <div className="absolute top-auto bottom-[260px] right-2 md:bottom-6 md:right-[196px] z-[1000] flex flex-col bg-white/95 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-white overflow-hidden w-9 md:w-12 transition-all duration-300">
-            {/* Manual Pin Select Button */}
-            <button
-                onClick={onSelectManual}
-                className={`w-full h-9 md:h-12 flex items-center justify-center transition-all border-b border-gray-100/50 hover:bg-gray-50 active:bg-gray-100
-                    ${isSelectingLoc ? 'text-blue-500' : 'text-gray-600 hover:text-blue-500'}`}
-                title="Pilih Titik Manual"
-            >
-                <LocateIcon size={16} className="md:w-5 md:h-5" />
-            </button>
-
-            {/* GPS Locate Button */}
-            <button
-                onClick={handleFlyToUser}
-                className={`w-full h-9 md:h-12 flex items-center justify-center transition-all border-b border-gray-100/50 hover:bg-gray-50 active:bg-gray-100
-                    ${userLoc ? 'text-blue-500' : 'text-gray-600 hover:text-blue-500'}`}
-                title="Lokasi Saya"
-            >
-                <Navigation size={18} className={`md:w-5 md:h-5 ${userLoc ? "fill-blue-500" : ""}`} strokeWidth={2.5} />
-            </button>
-            
-            {/* Zoom Out */}
-            <button
-                onClick={() => map.zoomOut()}
-                className="w-full h-9 md:h-12 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-blue-500 transition-all border-b border-gray-100/50 text-lg md:text-xl font-medium"
-            >
-                −
-            </button>
-
-            {/* Zoom In */}
-            <button
-                onClick={() => map.zoomIn()}
-                className="w-full h-9 md:h-12 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-blue-500 transition-all text-lg md:text-xl font-medium"
-            >
-                +
-            </button>
-        </div>
-    );
-};
 
 // =============================================
 // MAIN MAP PAGE COMPONENT

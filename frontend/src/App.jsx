@@ -27,7 +27,7 @@ class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    return { hasError: true, error: error };
   }
 
   componentDidCatch(error, errorInfo) {
@@ -51,6 +51,7 @@ class ErrorBoundary extends React.Component {
         <div className="flex flex-col h-[100dvh] w-full items-center justify-center bg-gray-50 px-6 text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Sedang memperbarui sistem...</h1>
           <p className="text-gray-500 mb-6">Mohon tunggu sebentar, halaman sedang memuat versi terbaru.</p>
+          <p className="text-red-500 mb-6 font-mono text-sm max-w-2xl overflow-auto p-4 bg-red-50 rounded-lg">{this.state.error?.message || "Unknown error"}</p>
           <button onClick={() => window.location.reload()} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">Refresh Sekarang</button>
         </div>
       );

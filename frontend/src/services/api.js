@@ -92,6 +92,11 @@ export const kategoriService = {
     
     // Ambil detail kategori
     getById: (id) => api.get(`/kategori/${id}`),
+
+    // --- ADMIN CRUD ---
+    create: (data) => api.post('/kategori', data),
+    update: (id, data) => api.put(`/kategori/${id}`, data),
+    delete: (id) => api.delete(`/kategori/${id}`),
 };
 
 /**
