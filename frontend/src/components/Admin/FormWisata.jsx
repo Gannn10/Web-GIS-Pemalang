@@ -77,16 +77,27 @@ const FormWisata = ({ formData, setFormData, onSubmit, isEditing, availableFasil
                         <div className="space-y-1.5">
                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Latitude</label>
                             <input 
-                                type="number" step="any" placeholder="-6.8615" required 
+                                type="text" placeholder="-6.8615 (Bisa Paste Lat, Lng)" required 
                                 className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
                                 value={formData.latitude} 
-                                onChange={(e) => setFormData({...formData, latitude: e.target.value})}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    // FITUR PINTAR: Deteksi jika user paste koordinat koma dari Google Maps
+                                    if (val.includes(',')) {
+                                        const parts = val.split(',');
+                                        if (parts.length >= 2) {
+                                            setFormData({...formData, latitude: parts[0].trim(), longitude: parts[1].trim()});
+                                            return;
+                                        }
+                                    }
+                                    setFormData({...formData, latitude: val});
+                                }}
                             />
                         </div>
                         <div className="space-y-1.5">
                             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Longitude</label>
                             <input 
-                                type="number" step="any" placeholder="109.3835" required 
+                                type="text" placeholder="109.3835" required 
                                 className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
                                 value={formData.longitude} 
                                 onChange={(e) => setFormData({...formData, longitude: e.target.value})}
