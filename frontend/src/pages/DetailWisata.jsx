@@ -685,7 +685,7 @@ const DetailWisata = ({ legacyRedirect }) => {
                                             style={{ height: '100%', width: '100%' }}
                                             scrollWheelZoom={false}
                                         >
-                                            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
                                             <Marker position={[parseFloat(wisata.latitude), parseFloat(wisata.longitude)]} icon={customMarkerIcon} />
                                         </MapContainer>
                                     </div>
@@ -796,7 +796,7 @@ const DetailWisata = ({ legacyRedirect }) => {
                                     dragging={false}
                                     scrollWheelZoom={false}
                                 >
-                                    <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
                                     <Marker position={[parseFloat(wisata.latitude), parseFloat(wisata.longitude)]} icon={customMarkerIcon} />
                                 </MapContainer>
                             </div>

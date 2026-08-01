@@ -341,7 +341,7 @@ const MapPage = () => {
     ];
 
     const mapTiles = {
-        streets: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        streets: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         minimalist: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
         satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
     };
