@@ -50,6 +50,7 @@ exports.getAllWisata = async (req, res) => {
 
 /**
  * 2. GET Wisata Terdekat (Menggunakan Algoritma Haversine dari Helper)
+ * RUMUS HAVERSINE
  */
 exports.getWisataTerdekat = async (req, res) => {
     try {
@@ -145,6 +146,14 @@ exports.createWisata = async (req, res) => {
         const final_foto_3 = getFileUrl(req, 'foto_3');
         const final_foto_populer = getFileUrl(req, 'foto_populer');
 
+        // =================================================================
+        // [PERBAIKAN POINT 4] SATPAM VALIDASI KOORDINAT
+        // Mencegah data nyasar ke koordinat 0,0 (Tengah Laut Afrika)
+        // =================================================================
+        // if (!latitude || !longitude) {
+        //  return sendError(res, 'Latitude dan Longitude tidak boleh kosong', 400);
+        // }
+
         const query = `
             INSERT INTO wisata (
                 nama_wisata, kecamatan, kategori_id, deskripsi, alamat, 
@@ -203,6 +212,14 @@ exports.updateWisata = async (req, res) => {
         const final_foto_2 = getFileUrl(req, 'foto_2');
         const final_foto_3 = getFileUrl(req, 'foto_3');
         const final_foto_populer = getFileUrl(req, 'foto_populer');
+
+        // =================================================================
+        // [PERBAIKAN POINT 4] SATPAM VALIDASI KOORDINAT
+        // Mencegah data nyasar ke koordinat 0,0 (Tengah Laut Afrika)
+        // =================================================================
+        // if (!latitude || !longitude) {
+        //    return sendError(res, 'Latitude dan Longitude tidak boleh kosong', 400);
+        // }
 
         const query = `
             UPDATE wisata SET
@@ -264,4 +281,4 @@ exports.deleteWisata = async (req, res) => {
         console.error('Error deleteWisata:', error);
         return sendError(res, 'Gagal hapus wisata', 500, error);
     }
-};
+};

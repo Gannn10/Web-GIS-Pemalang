@@ -151,7 +151,12 @@ const Dashboard = () => {
     };
 
     const handleEdit = (item) => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // [UX FIX] Scroll container utamanya, bukan window-nya
+        const scrollContainer = document.getElementById('main-scroll-container');
+        if (scrollContainer) {
+            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
         setFormData({
             nama_wisata: item.nama_wisata,
             kecamatan: item.kecamatan || '',
@@ -256,7 +261,7 @@ const Dashboard = () => {
                 </header>
 
                 {/* Scrollable Workspace */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar">
+                <div id="main-scroll-container" className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar">
                     
                     {/* STATS OVERVIEW SECTION */}
                     <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

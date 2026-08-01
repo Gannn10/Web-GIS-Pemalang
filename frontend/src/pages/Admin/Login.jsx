@@ -17,7 +17,8 @@ const Login = () => {
         setIsLoading(true);
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/login`, { username, password });
-            localStorage.setItem('token', response.data.token);
+            // FIXED BUG: Backend membungkus response dalam "data", dan axios membungkus dalam "data"
+            localStorage.setItem('token', response.data.data.token);
             // Beri sedikit delay untuk transisi animasi loading yang memuaskan
             setTimeout(() => {
                 navigate('/admin/dashboard');
