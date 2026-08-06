@@ -955,6 +955,11 @@ const MapPage = () => {
                                                                                 <span className={`inline-flex items-center text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-white/50 ${badge.bg}`}>
                                                                                     {item.nama_kategori || 'Destinasi'}
                                                                                 </span>
+                                                                                {item.rating && parseFloat(item.rating) > 0 && (
+                                                                                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
+                                                                                        ⭐ {item.rating}
+                                                                                    </span>
+                                                                                )}
                                                                             </div>
                                                                         </div>
                                                                         <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 text-gray-300 group-hover:bg-blue-500 group-hover:border-blue-500 group-hover:text-white transition-all duration-300 shadow-sm">
@@ -1246,6 +1251,11 @@ const MapPage = () => {
                                                 <span className={`text-[8px] md:text-[10px] font-black uppercase tracking-[0.1em] px-2 py-0.5 md:px-2.5 md:py-1 rounded-full ${getBadgeStyle(selectedWisata.nama_kategori).bg}`}>
                                                     {selectedWisata.nama_kategori?.replace('Wisata ', '')}
                                                 </span>
+                                                {selectedWisata.rating && parseFloat(selectedWisata.rating) > 0 && (
+                                                    <span className="flex items-center gap-0.5 text-[9px] md:text-[11px] font-bold text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100">
+                                                        ⭐ {selectedWisata.rating}
+                                                    </span>
+                                                )}
                                             </div>
                                             <h3 className="text-[14px] md:text-xl font-black text-gray-900 leading-tight mb-0.5 md:mb-1 pr-6">{selectedWisata.nama_wisata}</h3>
                                             <p className="text-[9px] md:text-xs text-gray-400 font-bold line-clamp-2 md:line-clamp-2 leading-relaxed">
@@ -1400,7 +1410,7 @@ const MapPage = () => {
                                                 <span className="text-[18px] font-black text-white leading-none mt-2">{radius} km</span>
                                             </div>
                                         </div>
-
+                                         
                                         <div className="relative z-10 flex items-center gap-2 mt-1">
                                             <span className="text-[9px] font-semibold text-blue-100">1 km</span>
                                             <input type="range" min="1" max="50" className="flex-1 accent-white cursor-pointer h-1.5 bg-white/20 rounded-full appearance-none outline-none" value={radius} onChange={(e) => setRadius(parseInt(e.target.value))} />

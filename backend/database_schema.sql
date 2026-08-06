@@ -50,10 +50,12 @@ CREATE TABLE wisata (
     -- Koordinat Spasial (WGS 84 - EPSG:4326)
     lokasi GEOMETRY(Point, 4326) NOT NULL,
     
-    -- Data Statistik Pengunjung
+    -- Data Statistik & Rating
     pengunjung_2022 INTEGER DEFAULT 0,
     pengunjung_2023 INTEGER DEFAULT 0,
     pengunjung_2024 INTEGER DEFAULT 0,
+    rating DECIMAL(2,1) DEFAULT 0.0,
+    jumlah_ulasan INTEGER DEFAULT 0,
     
     -- Media
     foto_utama VARCHAR(255),
@@ -81,7 +83,9 @@ ADD COLUMN IF NOT EXISTS foto_2 VARCHAR(255),
 ADD COLUMN IF NOT EXISTS foto_3 VARCHAR(255),
 ADD COLUMN IF NOT EXISTS foto_populer VARCHAR(255),
 ADD COLUMN IF NOT EXISTS daya_tarik TEXT,
-ADD COLUMN IF NOT EXISTS is_populer BOOLEAN DEFAULT FALSE;
+ADD COLUMN IF NOT EXISTS is_populer BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS rating DECIMAL(2,1) DEFAULT 0.0,
+ADD COLUMN IF NOT EXISTS jumlah_ulasan INTEGER DEFAULT 0;
 */
 
 -- ============================================

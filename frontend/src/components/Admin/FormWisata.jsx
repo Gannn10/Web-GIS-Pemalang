@@ -137,6 +137,28 @@ const FormWisata = ({ formData, setFormData, onSubmit, isEditing, availableFasil
                             />
                         </div>
                     </div>
+
+                    {/* 7. Rating & Ulasan (Manual dari Google) */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Rating Google (⭐)</label>
+                            <input 
+                                type="number" step="0.1" min="0" max="5" placeholder="Contoh: 4.5" 
+                                className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
+                                value={formData.rating || ''} 
+                                onChange={(e) => setFormData({...formData, rating: e.target.value})}
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Jumlah Ulasan</label>
+                            <input 
+                                type="number" placeholder="Contoh: 1500" 
+                                className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
+                                value={formData.jumlah_ulasan || ''} 
+                                onChange={(e) => setFormData({...formData, jumlah_ulasan: e.target.value})}
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 {/* ALAMAT LENGKAP */}
@@ -300,7 +322,7 @@ const FormWisata = ({ formData, setFormData, onSubmit, isEditing, availableFasil
                                     latitude: '', longitude: '', alamat: '',
                                     foto_utama: '', foto_2: '', foto_3: '',
                                     deskripsi: '', harga_tiket: '', jam_buka: '', jam_tutup: '',
-                                    is_populer: false, foto_populer: '',
+                                    is_populer: false, foto_populer: '', rating: '', jumlah_ulasan: '',
                                     fasilitas: []
                                 });
                                 const fileInputs = document.querySelectorAll('input[type="file"]');

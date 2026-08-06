@@ -89,6 +89,9 @@ const Dashboard = () => {
         
         dataToSend.append('is_populer', formData.is_populer);
         if (formData.foto_populer) dataToSend.append('foto_populer', formData.foto_populer);
+        
+        dataToSend.append('rating', formData.rating || 0);
+        dataToSend.append('jumlah_ulasan', formData.jumlah_ulasan || 0);
 
         const config = { headers: { Authorization: `Bearer ${token}` } };
         Swal.fire({ 
@@ -112,7 +115,7 @@ const Dashboard = () => {
                 latitude: '', longitude: '', alamat: '',
                 foto_utama: '', foto_2: '', foto_3: '',
                 deskripsi: '', harga_tiket: '', jam_buka: '', jam_tutup: '',
-                is_populer: false, foto_populer: '',
+                is_populer: false, foto_populer: '', rating: '', jumlah_ulasan: '',
                 fasilitas: []
             });
             
@@ -173,6 +176,8 @@ const Dashboard = () => {
             jam_tutup: item.jam_tutup || '',
             is_populer: item.is_populer || false,
             foto_populer: item.foto_populer || '',
+            rating: item.rating || '',
+            jumlah_ulasan: item.jumlah_ulasan || '',
             // Map the API facilities JSON format to just an array of IDs
             fasilitas: item.fasilitas ? item.fasilitas.map(f => f.fasilitas_id) : []
         });

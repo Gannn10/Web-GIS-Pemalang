@@ -17,6 +17,7 @@ exports.getAllWisata = async (req, res) => {
                 w.wisata_id, w.nama_wisata, w.kecamatan, w.kategori_id, k.nama_kategori,
                 w.deskripsi, w.alamat, w.harga_tiket, w.jam_buka, w.jam_tutup, 
                 w.foto_utama, w.foto_2, w.foto_3, w.daya_tarik, w.is_populer, w.foto_populer,
+                w.rating, w.jumlah_ulasan,
                 ST_X(w.lokasi::geometry) as longitude, 
                 ST_Y(w.lokasi::geometry) as latitude,
                 COALESCE(
@@ -66,6 +67,7 @@ exports.getWisataTerdekat = async (req, res) => {
         const query = `
             SELECT 
                 wisata_id, nama_wisata, kategori_id, alamat, foto_utama, foto_2, foto_3,
+                rating, jumlah_ulasan,
                 ST_X(lokasi::geometry) as longitude, ST_Y(lokasi::geometry) as latitude
             FROM wisata
         `;
@@ -138,7 +140,7 @@ exports.getWisataById = async (req, res) => {
  */
 exports.createWisata = async (req, res) => {
     try {
-        const { nama_wisata, kecamatan, kategori_id, deskripsi, alamat, harga_tiket, jam_buka, jam_tutup, latitude, longitude, daya_tarik, is_populer } = req.body;
+        const { nama_wisata, kecamatan, kategori_id, deskripsi, alamat, harga_tiket, jam_buka, jam_tutup, latitude, longitude, daya_tarik, is_populer, rating, jumlah_ulasan } = req.body;
 
         // Ambil Link Gambar (Bisa dari Upload file fisik, atau dari text biasa)
         const final_foto_utama = getFileUrl(req, 'foto_utama');
@@ -157,11 +159,11 @@ exports.createWisata = async (req, res) => {
         const query = `
             INSERT INTO wisata (
                 nama_wisata, kecamatan, kategori_id, deskripsi, alamat, 
-                harga_tiket, jam_buka, jam_tutup, lokasi, foto_utama, foto_2, foto_3, daya_tarik, is_populer, foto_populer
+                harga_tiket, jam_buka, jam_tutup, lokasi, foto_utama, foto_2, foto_3, daya_tarik, is_populer, foto_populer, rating, jumlah_ulasan
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, 
                 ST_SetSRID(ST_MakePoint($9, $10), 4326), 
-                $11, $12, $13, $14, $15, $16
+                $11, $12, $13, $14, $15, $16, $17, $18
             ) RETURNING *
         `;
 
@@ -169,11 +171,14 @@ exports.createWisata = async (req, res) => {
         const parsedLatitude = (latitude === '' || latitude === undefined || latitude === null) ? 0 : parseFloat(latitude.toString().replace(',', '.'));
         const parsedLongitude = (longitude === '' || longitude === undefined || longitude === null) ? 0 : parseFloat(longitude.toString().replace(',', '.'));
 
+        const parsedRating = rating ? parseFloat(rating) : 0.0;
+        const parsedJumlahUlasan = jumlah_ulasan ? parseInt(jumlah_ulasan) : 0;
+
         const values = [
             nama_wisata, kecamatan, kategori_id, deskripsi, alamat, 
             parsedHargaTiket, jam_buka, jam_tutup, parsedLongitude, parsedLatitude, 
             final_foto_utama, final_foto_2, final_foto_3, daya_tarik, 
-            is_populer === 'true' || is_populer === true, final_foto_populer
+            is_populer === 'true' || is_populer === true, final_foto_populer, parsedRating, parsedJumlahUlasan
         ];
 
         const result = await pool.query(query, values);
@@ -205,7 +210,7 @@ exports.updateWisata = async (req, res) => {
         const { 
             nama_wisata, kecamatan, kategori_id, deskripsi, alamat, 
             harga_tiket, jam_buka, jam_tutup, latitude, longitude, 
-            daya_tarik, is_populer 
+            daya_tarik, is_populer, rating, jumlah_ulasan
         } = req.body;
 
         const final_foto_utama = getFileUrl(req, 'foto_utama');
@@ -227,8 +232,8 @@ exports.updateWisata = async (req, res) => {
                 harga_tiket = $6, jam_buka = $7, jam_tutup = $8,
                 lokasi = ST_SetSRID(ST_MakePoint($9, $10), 4326),
                 foto_utama = $11, foto_2 = $12, foto_3 = $13, daya_tarik = $14,
-                is_populer = $15, foto_populer = $16, updated_at = CURRENT_TIMESTAMP
-            WHERE wisata_id = $17
+                is_populer = $15, foto_populer = $16, rating = $17, jumlah_ulasan = $18, updated_at = CURRENT_TIMESTAMP
+            WHERE wisata_id = $19
             RETURNING *
         `;
 
@@ -236,11 +241,14 @@ exports.updateWisata = async (req, res) => {
         const parsedLatitude = (latitude === '' || latitude === undefined || latitude === null) ? 0 : parseFloat(latitude.toString().replace(',', '.'));
         const parsedLongitude = (longitude === '' || longitude === undefined || longitude === null) ? 0 : parseFloat(longitude.toString().replace(',', '.'));
 
+        const parsedRating = rating ? parseFloat(rating) : 0.0;
+        const parsedJumlahUlasan = jumlah_ulasan ? parseInt(jumlah_ulasan) : 0;
+
         const values = [
             nama_wisata, kecamatan, kategori_id, deskripsi, alamat, 
             parsedHargaTiket, jam_buka, jam_tutup, parsedLongitude, parsedLatitude, 
             final_foto_utama, final_foto_2, final_foto_3, daya_tarik, 
-            is_populer === 'true' || is_populer === true, final_foto_populer, id 
+            is_populer === 'true' || is_populer === true, final_foto_populer, parsedRating, parsedJumlahUlasan, id 
         ];
 
         const result = await pool.query(query, values);

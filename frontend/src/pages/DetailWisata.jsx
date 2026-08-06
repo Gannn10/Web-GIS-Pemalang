@@ -336,6 +336,18 @@ const DetailWisata = ({ legacyRedirect }) => {
                             )}
 
                             {/* ── POINT 5 — Jam & Tiket Badges on Hero ── */}
+                            {wisata.rating && parseFloat(wisata.rating) > 0 && (
+                                <span style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                    padding: '5px 14px', background: 'rgba(245, 158, 11, 0.2)', backdropFilter: 'blur(8px)',
+                                    border: '1px solid rgba(245, 158, 11, 0.4)', borderRadius: 9999,
+                                    color: '#fff', fontSize: 11, fontWeight: 700,
+                                }}>
+                                    <Star size={11} fill="#FCD34D" color="#FCD34D" />
+                                    {wisata.rating} ({wisata.jumlah_ulasan || 0} Ulasan)
+                                </span>
+                            )}
+
                             <span style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 6,
                                 padding: '5px 14px', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',

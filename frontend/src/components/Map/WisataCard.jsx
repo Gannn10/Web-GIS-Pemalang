@@ -80,6 +80,11 @@ export const WisataCard = ({ item, index, userLoc, activeRouteName, routeInfo, o
                                 • {item.distance.toFixed(1)} km
                             </span>
                         )}
+                        {item.rating && parseFloat(item.rating) > 0 ? (
+                            <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500 ml-auto">
+                                ⭐ {item.rating}
+                            </span>
+                        ) : null}
                     </div>
                 </div>
 
