@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const wisataController = require('../controllers/wisataController');
+const googlePlacesController = require('../controllers/googlePlacesController');
 const authMiddleware = require('../middleware/auth');
 
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
@@ -48,6 +49,9 @@ router.get('/:id', wisataController.getWisataById);
 // ==============================
 // 2. PROTECTED ROUTES (Hanya Admin yang login)
 // ==============================
+
+// Sync Google Rating
+router.post('/sync-rating', authMiddleware, googlePlacesController.syncRating);
 
 // Tambah Wisata Baru (Pasang uploadFotos di tengah-tengah)
 router.post('/', authMiddleware, uploadFotos, wisataController.createWisata); 
