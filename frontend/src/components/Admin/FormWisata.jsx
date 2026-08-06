@@ -1,10 +1,7 @@
-import React, { useState } from 'react';
-import { Star, ShieldAlert, Image, Calendar, Info, MapPin, RefreshCw } from 'lucide-react';
-import axios from 'axios';
-import Swal from 'sweetalert2';
+import React from 'react';
+import { Star, ShieldAlert, Image, Calendar, Info, MapPin } from 'lucide-react';
 
 const FormWisata = ({ formData, setFormData, onSubmit, isEditing, availableFasilitas = [] }) => {
-    const [isSyncing, setIsSyncing] = useState(false);
     const handleFileChange = (e, fieldName) => {
         const file = e.target.files[0];
         setFormData({ ...formData, [fieldName]: file });
@@ -19,45 +16,6 @@ const FormWisata = ({ formData, setFormData, onSubmit, isEditing, availableFasil
             updated = [...current, id];
         }
         setFormData({ ...formData, fasilitas: updated });
-    };
-
-    const handleSyncGoogleRating = async () => {
-        if (!formData.nama_wisata) {
-            Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Isi nama wisata terlebih dahulu!' });
-            return;
-        }
-        
-        setIsSyncing(true);
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/wisata/sync-rating`, 
-                { nama_wisata: formData.nama_wisata },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            
-            if (res.data.success) {
-                setFormData({
-                    ...formData,
-                    rating: res.data.data.rating,
-                    jumlah_ulasan: res.data.data.jumlah_ulasan
-                });
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: `Rating disinkronisasi: ${res.data.data.rating} (${res.data.data.jumlah_ulasan} ulasan)`,
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: error.response?.data?.message || 'Gagal sinkronisasi data dari Google'
-            });
-        } finally {
-            setIsSyncing(false);
-        }
     };
 
     return (
@@ -181,36 +139,24 @@ const FormWisata = ({ formData, setFormData, onSubmit, isEditing, availableFasil
                     </div>
 
                     {/* 7. Rating & Ulasan (Manual dari Google) */}
-                    <div className="col-span-1 md:col-span-2">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Rating & Ulasan Google</label>
-                            <button 
-                                type="button" 
-                                onClick={handleSyncGoogleRating}
-                                disabled={isSyncing}
-                                className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all disabled:opacity-50"
-                            >
-                                <RefreshCw size={12} className={isSyncing ? "animate-spin" : ""} />
-                                {isSyncing ? 'Menyinkronkan...' : 'Ambil dari Google'}
-                            </button>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Rating Google (⭐)</label>
+                            <input 
+                                type="number" step="0.1" min="0" max="5" placeholder="Contoh: 4.5" 
+                                className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
+                                value={formData.rating || ''} 
+                                onChange={(e) => setFormData({...formData, rating: e.target.value})}
+                            />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <input 
-                                    type="number" step="0.1" min="0" max="5" placeholder="Rating (0-5)" 
-                                    className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
-                                    value={formData.rating || ''} 
-                                    onChange={(e) => setFormData({...formData, rating: e.target.value})}
-                                />
-                            </div>
-                            <div className="space-y-1.5">
-                                <input 
-                                    type="number" placeholder="Jumlah Ulasan" 
-                                    className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
-                                    value={formData.jumlah_ulasan || ''} 
-                                    onChange={(e) => setFormData({...formData, jumlah_ulasan: e.target.value})}
-                                />
-                            </div>
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Jumlah Ulasan</label>
+                            <input 
+                                type="number" placeholder="Contoh: 1500" 
+                                className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200/80 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
+                                value={formData.jumlah_ulasan || ''} 
+                                onChange={(e) => setFormData({...formData, jumlah_ulasan: e.target.value})}
+                            />
                         </div>
                     </div>
                 </div>
