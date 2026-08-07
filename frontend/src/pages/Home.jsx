@@ -13,7 +13,8 @@ import {
     MapPin,
     Globe,
     Map,
-    Home as HomeIcon
+    Home as HomeIcon,
+    Star
 } from 'lucide-react';
 
 /* ─── Design Tokens (Horizon Pemalang Light) ─── */
@@ -793,10 +794,18 @@ const Home = () => {
                                     {/* Text overlay */}
                                     <div className="hp-dest-content" style={{ zIndex: 2 }}>
                                         <div className="hp-dest-location" style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 10 }}>
-                                            <MapPin size={14} color="#53F8D9" />
-                                            <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.03em' }}>
-                                                {item.kecamatan}
-                                            </span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginRight: 8 }}>
+                                                <MapPin size={14} color="#53F8D9" />
+                                                <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.03em' }}>
+                                                    {item.kecamatan}
+                                                </span>
+                                            </div>
+                                            {item.rating && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.3)', padding: '3px 8px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <Star size={12} color="#FBBF24" fill="#FBBF24" />
+                                                    <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{item.rating}</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
                                             <h3 style={{
